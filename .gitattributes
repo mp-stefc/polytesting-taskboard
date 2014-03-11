@@ -1,0 +1,4 @@
+*.py text eol=lf
+*.markdown text eol=lf
+*.txt text eol=lf
+*.htm* text eol=lf
