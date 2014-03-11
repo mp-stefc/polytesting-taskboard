@@ -1,0 +1,4 @@
+{% for task in tasks %}
+    <a href="{{ task.href }}" class="{{ owner }} {{ status }}">{{ task.name }}</a>
+{% endfor %}
+

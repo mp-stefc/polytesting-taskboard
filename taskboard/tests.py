@@ -49,13 +49,16 @@ class DisplayingTasks(object):
 from taskboard import TaskBoard
 
 
-class DisplayingTasksInMemoryBoard(DisplayingTasks, TestCase):
+class InMemoryBoardStorage(object):
 
     def a_board(self, owners, states):
         self.board = TaskBoard(owners=owners, states=states)
 
     def with_task(self, owner, name, href, status):
         self.board.add_task(owner=owner, name=name, href=href, status=status)
+
+
+class DisplayingTasksInMemoryBoard(DisplayingTasks, InMemoryBoardStorage, TestCase):
 
     def get_tasks_for(self, owner, status):
         return self.board.get_tasks_for(owner, status)
@@ -65,3 +68,27 @@ class DisplayingTasksInMemoryBoard(DisplayingTasks, TestCase):
 
     def get_states(self):
         return self.board.get_states()
+
+from bs4 import BeautifulSoup
+from django.template.loader import render_to_string
+
+
+class DisplayingTasksInMemoryBoardViewTest(DisplayingTasks, InMemoryBoardStorage, TestCase):
+
+    def get_owners(self):
+        return list(td.string for td in self.get_soup().find_all('td', class_='owner'))
+
+    def get_states(self):
+        return list(th.string for th in self.get_soup().find_all('th'))
+
+    def get_tasks_for(self, owner, status):
+        return list(dict(name=a.string, href=a['href']) for a in self.get_soup().select('td a.%s.%s' % (owner, status)))
+
+    def get_html(self):
+        html = render_to_string('taskboard/board.html', {'board': self.board})
+        # TODO: provide some better test support than "print html"
+        # print html
+        return html
+
+    def get_soup(self):
+        return BeautifulSoup(self.get_html())

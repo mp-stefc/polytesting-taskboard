@@ -1,0 +1,23 @@
+{% load taskboard_task %}
+<html>
+    <body>
+        <table>
+            <tr>
+                <td></td>
+                {% for state in board.get_states %}
+                    <th>{{ state }}</th>
+                {% endfor %}
+            </tr>
+            {% for owner in board.get_owners %}
+                <tr>
+                    <td class="owner">{{ owner }}</td>
+                    {% for state in board.get_states %}
+                        <td>
+                            {% tb_tasks board owner state %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    </body>
+</html>
