@@ -46,22 +46,22 @@ class DisplayingTasks(object):
             self.get_tasks_for(owner='Dan', status='Closed'))
 
 
+from taskboard import TaskBoard
+
+
 class DisplayingTasksInMemoryBoard(DisplayingTasks, TestCase):
 
     def a_board(self, owners, states):
-        from collections import OrderedDict as od
-        self.board = od((o, od((s, []) for s in states)) for o in owners)
-        pass
+        self.board = TaskBoard(owners=owners, states=states)
 
     def with_task(self, owner, name, href, status):
-        self.get_tasks_for(owner=owner, status=status).append(
-            {'name': name, 'href': href})
+        self.board.add_task(owner=owner, name=name, href=href, status=status)
 
     def get_tasks_for(self, owner, status):
-        return self.board[owner][status]
+        return self.board.get_tasks_for(owner, status)
 
     def get_owners(self):
-        return self.board.keys()
+        return self.board.get_owners()
 
     def get_states(self):
-        return self.board.values()[0].keys()
+        return self.board.get_states()
