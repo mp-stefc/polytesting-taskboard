@@ -46,6 +46,7 @@ class SoupSelectionList(list):
         try:
             f, fname = tempfile.mkstemp()
             fd = os.fdopen(f, 'w')
+            # TODO: use some reflection to include the filter/map lambdas in the output
             fd.write(self.html)
             return fname + ' '
         except Exception as e:
