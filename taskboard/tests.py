@@ -45,6 +45,15 @@ class DisplayingTasks(object):
             [{'name': 'First', 'href': '1'}, {'name': 'Second', 'href': '2'}],
             self.get_tasks_for(owner='Dan', status='Closed'))
 
+    def _getAssertEqualityFunc(self, first, second):
+        """ see  http://bugs.python.org/issue2578 - by design it
+            only uses rich assertion if the two objects are the
+            exact same type """
+        if isinstance(second, type(first)): # I use the expected, actual convention
+            asserter = self._type_equality_funcs.get(type(first))
+            if asserter is not None and isinstance(asserter, basestring):
+                    return getattr(self, asserter)
+        return super(DisplayingTasks, self)._getAssertEqualityFunc(first, second)
 
 from taskboard import TaskBoard
 
@@ -69,26 +78,34 @@ class DisplayingTasksInMemoryBoard(DisplayingTasks, InMemoryBoardStorage, TestCa
     def get_states(self):
         return self.board.get_states()
 
-from bs4 import BeautifulSoup
 from django.template.loader import render_to_string
+from bs4 import BeautifulSoup
+from taskboard.test_helpers import SoupSelectionList
 
 
 class DisplayingTasksInMemoryBoardViewTest(DisplayingTasks, InMemoryBoardStorage, TestCase):
 
     def get_owners(self):
-        return list(td.string for td in self.get_soup().find_all('td', class_='owner'))
+        return SoupSelectionList(
+            self.get_html(), 
+            lambda soup: soup.find_all('td', class_='owner'),
+            lambda td: td.string
+        )
 
     def get_states(self):
-        return list(th.string for th in self.get_soup().find_all('th'))
+        return SoupSelectionList(
+            self.get_html(), 
+            lambda soup: soup.find_all('th'),
+            lambda th: th.string
+        )
 
     def get_tasks_for(self, owner, status):
-        return list(dict(name=a.string, href=a['href']) for a in self.get_soup().select('td a.%s.%s' % (owner, status)))
+        css_selector = 'td a.%s.%s' % (owner, status)
+        return SoupSelectionList(
+            self.get_html(), 
+            lambda soup: soup.select(css_selector),
+            lambda a: dict(name=a.string, href=a['href'])
+        )
 
     def get_html(self):
-        html = render_to_string('taskboard/board.html', {'board': self.board})
-        # TODO: provide some better test support than "print html"
-        # print html
-        return html
-
-    def get_soup(self):
-        return BeautifulSoup(self.get_html())
+        return render_to_string('taskboard/board.html', {'board': self.board})
