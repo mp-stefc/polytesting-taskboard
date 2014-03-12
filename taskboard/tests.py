@@ -82,8 +82,7 @@ from django.template.loader import render_to_string
 from bs4 import BeautifulSoup
 from taskboard.test_helpers import SoupSelectionList
 
-
-class DisplayingTasksInMemoryBoardViewTest(DisplayingTasks, InMemoryBoardStorage, TestCase):
+class HtmlBasedGetters(object):
 
     def get_owners(self):
         return SoupSelectionList(
@@ -107,5 +106,37 @@ class DisplayingTasksInMemoryBoardViewTest(DisplayingTasks, InMemoryBoardStorage
             lambda a: dict(name=a.string, href=a['href'])
         )
 
+
+class DisplayingTasksTemplateRenderingInMemoryBoardViewTest(DisplayingTasks, InMemoryBoardStorage, HtmlBasedGetters, TestCase):
+
     def get_html(self):
         return render_to_string('taskboard/board.html', {'board': self.board})
+
+from django.conf.urls import patterns
+from taskboard.views import TaskBoardView
+from django.utils.decorators import classonlymethod
+
+
+class DisplayingTasksViaDjangoClientInMemoryBoardViewTest(DisplayingTasks, InMemoryBoardStorage, HtmlBasedGetters, TestCase):
+
+    class urls:
+        urlpatterns = patterns('',
+            (r'^$', TaskBoardView.as_view()),
+        )
+ 
+    @classonlymethod
+    def setUpClass(cls):
+        super(DisplayingTasksViaDjangoClientInMemoryBoardViewTest, cls).setUpClass()
+        cls._orig_view_get_board_fn = TaskBoardView.get_board
+
+    def setUp(self):
+        super(DisplayingTasksViaDjangoClientInMemoryBoardViewTest, self).setUpClass()
+        TaskBoardView.get_board = lambda *a, **kw: self.board
+ 
+    @classonlymethod
+    def tearDownClass(cls):
+        super(DisplayingTasksViaDjangoClientInMemoryBoardViewTest, cls).tearDownClass()
+        TaskBoardView.get_board = cls._orig_view_get_board_fn 
+
+    def get_html(self):
+        return self.client.get('/').content
