@@ -1,5 +1,8 @@
 from django.test import TestCase
-
+from taskboard.test_helpers import (
+   PurePythonBoardBuilder, PurePythonBoardGetter,
+   TemplateRenderingBoardGetter, DjangoClientViewBoardGetter,
+)
 
 class DisplayingTasks(object):
 
@@ -45,6 +48,8 @@ class DisplayingTasks(object):
             [{'name': 'First', 'href': '1'}, {'name': 'Second', 'href': '2'}],
             self.get_tasks_for(owner='Dan', status='Closed'))
 
+###
+
     def _getAssertEqualityFunc(self, first, second):
         """ see  http://bugs.python.org/issue2578 - by design it
             only uses rich assertion if the two objects are the
@@ -55,88 +60,40 @@ class DisplayingTasks(object):
                     return getattr(self, asserter)
         return super(DisplayingTasks, self)._getAssertEqualityFunc(first, second)
 
-from taskboard import TaskBoard
+    def setUp(self):
+        super(DisplayingTasks, self).setUp()
+        self.builder = self.builder_cls(self)
+        self.getter = self.getter_cls(self)
 
+    def get_tasks_for(self, owner, status):
+        return self.getter.get_tasks_for(
+            self.builder.get_board(), owner, status)
 
-class InMemoryBoardStorage(object):
+    def get_owners(self):
+        return self.getter.get_owners(self.builder.get_board())
+
+    def get_states(self):
+        return self.getter.get_states(self.builder.get_board())
 
     def a_board(self, owners, states):
-        self.board = TaskBoard(owners=owners, states=states)
+        self.builder.a_board(owners, states)
 
     def with_task(self, owner, name, href, status):
-        self.board.add_task(owner=owner, name=name, href=href, status=status)
+        self.builder.with_task(owner, name, href, status)
 
 
-class DisplayingTasksInMemoryBoard(DisplayingTasks, InMemoryBoardStorage, TestCase):
-
-    def get_tasks_for(self, owner, status):
-        return self.board.get_tasks_for(owner, status)
-
-    def get_owners(self):
-        return self.board.get_owners()
-
-    def get_states(self):
-        return self.board.get_states()
-
-from django.template.loader import render_to_string
-from bs4 import BeautifulSoup
-from taskboard.test_helpers import SoupSelectionList
-
-class HtmlBasedGetters(object):
-
-    def get_owners(self):
-        return SoupSelectionList(
-            self.get_html(), 
-            lambda soup: soup.find_all('td', class_='owner'),
-            lambda td: td.string
-        )
-
-    def get_states(self):
-        return SoupSelectionList(
-            self.get_html(), 
-            lambda soup: soup.find_all('th'),
-            lambda th: th.string
-        )
-
-    def get_tasks_for(self, owner, status):
-        css_selector = 'td a.%s.%s' % (owner, status)
-        return SoupSelectionList(
-            self.get_html(), 
-            lambda soup: soup.select(css_selector),
-            lambda a: dict(name=a.string, href=a['href'])
-        )
+class DisplayingTasksInMemoryBoard(DisplayingTasks, TestCase):
+    builder_cls = PurePythonBoardBuilder
+    getter_cls = PurePythonBoardGetter
 
 
-class DisplayingTasksTemplateRenderingInMemoryBoardViewTest(DisplayingTasks, InMemoryBoardStorage, HtmlBasedGetters, TestCase):
-
-    def get_html(self):
-        return render_to_string('taskboard/board.html', {'board': self.board})
-
-from django.conf.urls import patterns
-from taskboard.views import TaskBoardView
-from django.utils.decorators import classonlymethod
+class DisplayingTasksTemplateRenderingInMemoryBoardViewTest(DisplayingTasks, TestCase):
+    builder_cls = PurePythonBoardBuilder
+    getter_cls = TemplateRenderingBoardGetter
 
 
-class DisplayingTasksViaDjangoClientInMemoryBoardViewTest(DisplayingTasks, InMemoryBoardStorage, HtmlBasedGetters, TestCase):
+class DisplayingTasksViaDjangoClientInMemoryBoardViewTest(DisplayingTasks, TestCase):
 
-    class urls:
-        urlpatterns = patterns('',
-            (r'^$', TaskBoardView.as_view()),
-        )
- 
-    @classonlymethod
-    def setUpClass(cls):
-        super(DisplayingTasksViaDjangoClientInMemoryBoardViewTest, cls).setUpClass()
-        cls._orig_view_get_board_fn = TaskBoardView.get_board
-
-    def setUp(self):
-        super(DisplayingTasksViaDjangoClientInMemoryBoardViewTest, self).setUpClass()
-        TaskBoardView.get_board = lambda *a, **kw: self.board
- 
-    @classonlymethod
-    def tearDownClass(cls):
-        super(DisplayingTasksViaDjangoClientInMemoryBoardViewTest, cls).tearDownClass()
-        TaskBoardView.get_board = cls._orig_view_get_board_fn 
-
-    def get_html(self):
-        return self.client.get('/').content
+    urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
+    builder_cls = PurePythonBoardBuilder
+    getter_cls = DjangoClientViewBoardGetter

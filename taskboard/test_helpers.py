@@ -1,6 +1,12 @@
 from bs4 import BeautifulSoup
 import tempfile
 import os
+from django.core.urlresolvers import clear_url_caches, set_urlconf
+from django.conf import settings
+from django.conf.urls import patterns
+from django.template.loader import render_to_string
+from taskboard.views import TaskBoardView
+from taskboard import TaskBoard
 
 
 class SoupSelectionList(list):
@@ -57,3 +63,90 @@ class SoupSelectionList(list):
                 fd.close()
             except UnboundLocalError:
                 pass
+
+class IgnoreTestCaseInit(object):
+
+    def __init__(self, testcase):
+        pass
+
+
+class PurePythonBoardBuilder(IgnoreTestCaseInit):
+
+    def a_board(self, owners, states):
+        self.board = TaskBoard(owners=owners, states=states)
+
+    def with_task(self, owner, name, href, status):
+        self.board.add_task(owner=owner, name=name, href=href, status=status)
+
+    def get_board(self):
+        return self.board
+
+
+class PurePythonBoardGetter(IgnoreTestCaseInit):
+
+    def get_tasks_for(self, board, owner, status):
+        return board.get_tasks_for(owner, status)
+
+    def get_owners(self, board):
+        return board.get_owners()
+
+    def get_states(self, board):
+        return board.get_states()
+
+
+class HtmlSoupBoardGetter(IgnoreTestCaseInit):
+
+    def get_owners(self, board):
+        return SoupSelectionList(
+            self.get_html(board), 
+            lambda soup: soup.find_all('td', class_='owner'),
+            lambda td: td.string
+        )
+
+    def get_states(self, board):
+        return SoupSelectionList(
+            self.get_html(board), 
+            lambda soup: soup.find_all('th'),
+            lambda th: th.string
+        )
+
+    def get_tasks_for(self, board, owner, status):
+        css_selector = 'td a.%s.%s' % (owner, status)
+        return SoupSelectionList(
+            self.get_html(board), 
+            lambda soup: soup.select(css_selector),
+            lambda a: dict(name=a.string, href=a['href'])
+        )
+
+
+class TemplateRenderingBoardGetter(HtmlSoupBoardGetter):
+
+    def get_html(self, board):
+        return render_to_string('taskboard/board.html', {'board': board})
+
+
+def change_root_urlconf_to(urls):
+    # TODO: copied from django.test.SimpleTestCase._urlconf_setup - PR upstairs to make it availabel outside testing too?
+    set_urlconf(None)
+    settings.ROOT_URLCONF = urls
+    clear_url_caches() 
+
+
+class DjangoClientViewBoardGetter(HtmlSoupBoardGetter):
+
+    class urls:
+        urlpatterns = patterns('',
+            (r'^$', TaskBoardView.as_view()),
+        )
+
+    def __init__(self, testcase):
+        self.client = testcase.client
+        change_root_urlconf_to(self.urls)
+
+    def get_html(self, board):
+        _orig_view_get_board_fn = TaskBoardView.get_board
+        try:
+            TaskBoardView.get_board = lambda *a, **kw: board
+            return self.client.get('/').content
+        finally:
+            TaskBoardView.get_board = _orig_view_get_board_fn 
