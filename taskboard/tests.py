@@ -4,7 +4,42 @@ from taskboard.test_helpers import (
    TemplateRenderingBoardGetter, DjangoClientViewBoardGetter,
 )
 
-class DisplayingTasks(object):
+
+class BoardApi(object):
+
+    def _getAssertEqualityFunc(self, first, second):
+        """ see  http://bugs.python.org/issue2578 - by design it
+            only uses rich assertion if the two objects are the
+            exact same type """
+        if isinstance(second, type(first)): # I use the expected, actual convention
+            asserter = self._type_equality_funcs.get(type(first))
+            if asserter is not None and isinstance(asserter, basestring):
+                    return getattr(self, asserter)
+        return super(BoardApi, self)._getAssertEqualityFunc(first, second)
+
+    def setUp(self):
+        super(BoardApi, self).setUp()
+        self.builder = self.builder_cls(self)
+        self.getter = self.getter_cls(self)
+
+    def get_tasks_for(self, owner, status):
+        return self.getter.get_tasks_for(
+            self.builder.get_board(), owner, status)
+
+    def get_owners(self):
+        return self.getter.get_owners(self.builder.get_board())
+
+    def get_states(self):
+        return self.getter.get_states(self.builder.get_board())
+
+    def a_board(self, owners, states):
+        self.builder.a_board(owners, states)
+
+    def with_task(self, owner, name, href, status):
+        self.builder.with_task(owner, name, href, status)
+
+
+class DisplayingTasks(BoardApi):
 
     def test_constructing_boards_owner_state_order_is_preserved(self):
         self.a_board(owners=['a', 'b', 'c'], states=['x', 'y'])
@@ -47,39 +82,6 @@ class DisplayingTasks(object):
         self.assertEquals(
             [{'name': 'First', 'href': '1'}, {'name': 'Second', 'href': '2'}],
             self.get_tasks_for(owner='Dan', status='Closed'))
-
-###
-
-    def _getAssertEqualityFunc(self, first, second):
-        """ see  http://bugs.python.org/issue2578 - by design it
-            only uses rich assertion if the two objects are the
-            exact same type """
-        if isinstance(second, type(first)): # I use the expected, actual convention
-            asserter = self._type_equality_funcs.get(type(first))
-            if asserter is not None and isinstance(asserter, basestring):
-                    return getattr(self, asserter)
-        return super(DisplayingTasks, self)._getAssertEqualityFunc(first, second)
-
-    def setUp(self):
-        super(DisplayingTasks, self).setUp()
-        self.builder = self.builder_cls(self)
-        self.getter = self.getter_cls(self)
-
-    def get_tasks_for(self, owner, status):
-        return self.getter.get_tasks_for(
-            self.builder.get_board(), owner, status)
-
-    def get_owners(self):
-        return self.getter.get_owners(self.builder.get_board())
-
-    def get_states(self):
-        return self.getter.get_states(self.builder.get_board())
-
-    def a_board(self, owners, states):
-        self.builder.a_board(owners, states)
-
-    def with_task(self, owner, name, href, status):
-        self.builder.with_task(owner, name, href, status)
 
 
 class DisplayingTasksInMemoryBoard(DisplayingTasks, TestCase):
