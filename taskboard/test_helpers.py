@@ -150,3 +150,14 @@ class DjangoClientViewBoardGetter(HtmlSoupBoardGetter):
             return self.client.get('/').content
         finally:
             TaskBoardView.get_board = _orig_view_get_board_fn 
+
+
+class InMemoryTaskMover(object):
+    def __init__(self, testcase):
+        pass
+
+    def move_task(self, board, url, to_owner, to_status):
+        board.move(url, to_owner, to_status)
+
+    def get_move_log(self, board):
+        return board.get_move_logs()
