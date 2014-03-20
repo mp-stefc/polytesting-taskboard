@@ -137,41 +137,32 @@ class MovingSingleTaskOnTwoByTwoBoard(BoardApi):
         self.a_board(owners=['Alice', 'Bob'], states=['Open', 'Done'])
         self.with_task(owner='Alice', name='task', href='/task', status='Open')
         self.assert_single_tasks_location_is(owner='Alice', status='Open')
-        self.assert_move_log_is([])
 
     def test_can_move_to_same_status_different_person(self):
         self.move_task('/task', to_owner='Bob', to_status='Open')
         self.assert_single_tasks_location_is(owner='Bob', status='Open')
-        self.assert_move_log_is([{'href': '/task', 'to_owner': 'Bob', 'to_status': 'Open'}])
 
     def test_can_move_to_different_status_same_person(self):
         self.move_task('/task', to_owner='Alice', to_status='Done')
         self.assert_single_tasks_location_is(owner='Alice', status='Done')
-        self.assert_move_log_is([{'href': '/task', 'to_owner': 'Alice', 'to_status': 'Done'}])
 
     def test_can_move_to_differnt_status_different_person(self):
         self.move_task('/task', to_owner='Bob', to_status='Done')
         self.assert_single_tasks_location_is(owner='Bob', status='Done')
-        self.assert_move_log_is([{'href': '/task', 'to_owner': 'Bob', 'to_status': 'Done'}])
 
     def test_moving_to_self_does_not_move(self):
         self.move_task('/task', to_owner='Alice', to_status='Open')
         self.assert_single_tasks_location_is(owner='Alice', status='Open')
-        self.assert_move_log_is([])
 
     def test_can_move_multiple_times(self):
         self.move_task('/task', to_owner='Bob', to_status='Done')
         self.move_task('/task', to_owner='Alice', to_status='Open')
         self.assert_single_tasks_location_is(owner='Alice', status='Open')
-        self.assert_move_log_is([{'href': '/task', 'to_owner': 'Bob', 'to_status': 'Done'}, {'href': '/task', 'to_owner': 'Alice', 'to_status': 'Open'}])
 
 ###
 
     def move_task(self, url, to_owner, to_status):
         self.mover.move_task(url, to_owner, to_status)
-
-    def assert_move_log_is(self, expected_moves):
-        self.assertEquals(expected_moves, self.mover.get_move_log())
 
     def assert_single_tasks_location_is(self, owner, status):
         expected = {}

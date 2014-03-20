@@ -156,10 +156,6 @@ class InMemoryTaskMover(BaseGetter):
     def move_task(self, url, to_owner, to_status):
         self.get_board().move(url, to_owner, to_status)
 
-    def get_move_log(self):
-        return self.get_board().get_move_logs()
-
-
 class HttpTaskMover(BaseGetter):
 
     class urls:
@@ -183,7 +179,3 @@ class HttpTaskMover(BaseGetter):
                 payload=post_data,
                 url=url_to_post_to
             ))
-
-    def get_move_log(self):
-        # TODO there needs to be a UI for this or there is no point asserting
-        return self.get_board().get_move_logs()

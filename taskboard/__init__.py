@@ -9,7 +9,6 @@ class TaskBoard(object):
         self.data = od((o, od((s, []) for s in states)) for o in owners)
         self.href2place = {}
         self.href2name = {}
-        self.move_log = []
 
     def get_tasks_for(self, owner, status):
         return list(map(dict, self._get_tasklist_for(owner, status)))
@@ -30,10 +29,6 @@ class TaskBoard(object):
         task_name = self.href2name[href]
         tasks.remove({'href': href, 'name': task_name})
         self.add_task(owner=to_owner, status=to_status, href=href, name=task_name)
-        self.move_log.append(dict(href=href, to_owner=to_owner, to_status=to_status))
-
-    def get_move_logs(self):
-        return map(dict, self.move_log)
 
     def get_owners(self):
         return self.data.keys()
