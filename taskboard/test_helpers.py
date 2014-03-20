@@ -1,11 +1,12 @@
 from bs4 import BeautifulSoup
 import tempfile
 import os
-from django.core.urlresolvers import clear_url_caches, set_urlconf
+from django.core.urlresolvers import clear_url_caches, set_urlconf, reverse
 from django.conf import settings
+from django.http import HttpResponse
 from django.conf.urls import patterns
 from django.template.loader import render_to_string
-from taskboard.views import TaskBoardView
+from taskboard.views import TaskBoardView, MoveTaskView
 from taskboard import TaskBoard
 
 
@@ -152,12 +153,43 @@ class DjangoClientViewBoardGetter(HtmlSoupBoardGetter):
             TaskBoardView.get_board = _orig_view_get_board_fn 
 
 
-class InMemoryTaskMover(object):
-    def __init__(self, testcase):
-        pass
+class InMemoryTaskMover(IgnoreTestCaseInit):
 
     def move_task(self, board, url, to_owner, to_status):
         board.move(url, to_owner, to_status)
+
+    def get_move_log(self, board):
+        return board.get_move_logs()
+
+
+class HttpTaskMover(object):
+
+    class urls:
+        urlpatterns = patterns('',
+            (r'^move/$', MoveTaskView.as_view(), {'success_url_reverse_name': 'move_success'}, 'move_task'),
+            (r'^success/$', lambda *a, **kw: HttpResponse('OK'), {}, 'move_success'),
+        )
+
+    def __init__(self, testcase):
+        self.client = testcase.client
+        change_root_urlconf_to(self.urls)
+
+    def move_task(self, board, url, to_owner, to_status):
+        orig_get_board = MoveTaskView.get_board
+        try:
+            MoveTaskView.get_board = lambda *a, **kw: board
+            post_data = dict(
+                url=url, to_owner=to_owner, to_status=to_status)
+            url_to_post_to = reverse('move_task')
+            response = self.client.post(url_to_post_to, post_data)
+            if response.status_code != 302:
+                raise Exception('expected HTTP 302 on successful post, got %(status)s while posting %(payload)r to %(url)s ' % dict(
+                    status=response.status_code,
+                    payload=post_data,
+                    url=url_to_post_to
+                ))
+        finally:
+            MoveTaskView.get_board = orig_get_board
 
     def get_move_log(self, board):
         return board.get_move_logs()
