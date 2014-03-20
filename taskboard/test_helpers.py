@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from django.conf.urls import patterns
 from django.template.loader import render_to_string
 from taskboard.views import TaskBoardView, MoveTaskView
-from taskboard import TaskBoard
+import taskboard
 
 
 class SoupSelectionList(list):
@@ -65,16 +65,19 @@ class SoupSelectionList(list):
             except UnboundLocalError:
                 pass
 
-class IgnoreTestCaseInit(object):
+class BaseGetter(object):
 
     def __init__(self, testcase):
         pass
 
+    def get_board(self):
+        return taskboard.board_loader.get_board()
 
-class PurePythonBoardBuilder(IgnoreTestCaseInit):
+
+class PurePythonBoardBuilder(BaseGetter):
 
     def a_board(self, owners, states):
-        self.board = TaskBoard(owners=owners, states=states)
+        self.board = taskboard.TaskBoard(owners=owners, states=states)
 
     def with_task(self, owner, name, href, status):
         self.board.add_task(owner=owner, name=name, href=href, status=status)
@@ -83,38 +86,38 @@ class PurePythonBoardBuilder(IgnoreTestCaseInit):
         return self.board
 
 
-class PurePythonBoardGetter(IgnoreTestCaseInit):
+class PurePythonBoardGetter(BaseGetter):
 
-    def get_tasks_for(self, board, owner, status):
-        return board.get_tasks_for(owner, status)
+    def get_tasks_for(self, owner, status):
+        return self.get_board().get_tasks_for(owner, status)
 
-    def get_owners(self, board):
-        return board.get_owners()
+    def get_owners(self):
+        return self.get_board().get_owners()
 
-    def get_states(self, board):
-        return board.get_states()
+    def get_states(self):
+        return self.get_board().get_states()
 
 
-class HtmlSoupBoardGetter(IgnoreTestCaseInit):
+class HtmlSoupBoardGetter(BaseGetter):
 
-    def get_owners(self, board):
+    def get_owners(self):
         return SoupSelectionList(
-            self.get_html(board), 
+            self.get_html(), 
             lambda soup: soup.find_all('td', class_='owner'),
             lambda td: td.string
         )
 
-    def get_states(self, board):
+    def get_states(self):
         return SoupSelectionList(
-            self.get_html(board), 
+            self.get_html(), 
             lambda soup: soup.find_all('th'),
             lambda th: th.string
         )
 
-    def get_tasks_for(self, board, owner, status):
+    def get_tasks_for(self, owner, status):
         css_selector = 'td a.%s.%s' % (owner, status)
         return SoupSelectionList(
-            self.get_html(board), 
+            self.get_html(), 
             lambda soup: soup.select(css_selector),
             lambda a: dict(name=a.string, href=a['href'])
         )
@@ -122,8 +125,8 @@ class HtmlSoupBoardGetter(IgnoreTestCaseInit):
 
 class TemplateRenderingBoardGetter(HtmlSoupBoardGetter):
 
-    def get_html(self, board):
-        return render_to_string('taskboard/board.html', {'board': board})
+    def get_html(self):
+        return render_to_string('taskboard/board.html', {'board': self.get_board()})
 
 
 def change_root_urlconf_to(urls):
@@ -144,20 +147,20 @@ class DjangoClientViewBoardGetter(HtmlSoupBoardGetter):
         self.client = testcase.client
         change_root_urlconf_to(self.urls)
 
-    def get_html(self, board):
+    def get_html(self):
         return self.client.get('/').content
 
 
-class InMemoryTaskMover(IgnoreTestCaseInit):
+class InMemoryTaskMover(BaseGetter):
 
-    def move_task(self, board, url, to_owner, to_status):
-        board.move(url, to_owner, to_status)
+    def move_task(self, url, to_owner, to_status):
+        self.get_board().move(url, to_owner, to_status)
 
-    def get_move_log(self, board):
-        return board.get_move_logs()
+    def get_move_log(self):
+        return self.get_board().get_move_logs()
 
 
-class HttpTaskMover(object):
+class HttpTaskMover(BaseGetter):
 
     class urls:
         urlpatterns = patterns('',
@@ -169,7 +172,7 @@ class HttpTaskMover(object):
         self.client = testcase.client
         change_root_urlconf_to(self.urls)
 
-    def move_task(self, board, url, to_owner, to_status):
+    def move_task(self, url, to_owner, to_status):
         post_data = dict(
             url=url, to_owner=to_owner, to_status=to_status)
         url_to_post_to = reverse('move_task')
@@ -181,5 +184,6 @@ class HttpTaskMover(object):
                 url=url_to_post_to
             ))
 
-    def get_move_log(self, board):
-        return board.get_move_logs()
+    def get_move_log(self):
+        # TODO there needs to be a UI for this or there is no point asserting
+        return self.get_board().get_move_logs()

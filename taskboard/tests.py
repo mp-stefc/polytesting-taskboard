@@ -34,14 +34,14 @@ class BoardApi(object):
     def setUp(self):
         super(BoardApi, self).setUp()
         cls = type(self)
-        get_board_objs = []
+        board_builder_objs = []
         for prop_cls_name in filter(lambda name: name.endswith('_cls'), dir(cls)):
             prop_name = prop_cls_name[:-4]
             try:
                 tp_to_create = getattr(cls, prop_cls_name)
                 obj = tp_to_create(self)
-                if hasattr(obj, 'get_board'):
-                    get_board_objs.append(obj)
+                if hasattr(obj, 'a_board'):
+                    board_builder_objs.append(obj)
             except TypeError as e:
                 raise TypeError(
                     'could not create instance of %s (from %s.%s) - %s' % (
@@ -49,18 +49,17 @@ class BoardApi(object):
                     )
                 )
             setattr(self, prop_name, obj)
-        self.assertEquals(1, len(get_board_objs), 'only one helper should provide the board')
-        taskboard.board_loader = get_board_objs[0]
+        self.assertEquals(1, len(board_builder_objs), 'only one helper should build the board, but got multiple: %s' % ', '.join('%s' % type(x) for x in board_builder_objs))
+        taskboard.board_loader = board_builder_objs[0]
 
     def get_tasks_for(self, owner, status):
-        return self.getter.get_tasks_for(
-            self.builder.get_board(), owner, status)
+        return self.getter.get_tasks_for(owner, status)
 
     def get_owners(self):
-        return self.getter.get_owners(self.builder.get_board())
+        return self.getter.get_owners()
 
     def get_states(self):
-        return self.getter.get_states(self.builder.get_board())
+        return self.getter.get_states()
 
     def a_board(self, owners, states):
         self.builder.a_board(owners, states)
@@ -169,10 +168,10 @@ class MovingSingleTaskOnTwoByTwoBoard(BoardApi):
 ###
 
     def move_task(self, url, to_owner, to_status):
-        self.mover.move_task(self.builder.get_board(), url, to_owner, to_status)
+        self.mover.move_task(url, to_owner, to_status)
 
     def assert_move_log_is(self, expected_moves):
-        self.assertEquals(expected_moves, self.mover.get_move_log(self.builder.get_board()))
+        self.assertEquals(expected_moves, self.mover.get_move_log())
 
     def assert_single_tasks_location_is(self, owner, status):
         expected = {}
