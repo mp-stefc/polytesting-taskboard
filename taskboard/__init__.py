@@ -1,5 +1,7 @@
 from collections import OrderedDict as od
 
+board_loader = None
+
 
 class TaskBoard(object):
 

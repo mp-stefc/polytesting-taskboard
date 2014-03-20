@@ -5,6 +5,8 @@ from taskboard.test_helpers import (
     InMemoryTaskMover, HttpTaskMover,
 )
 from django.utils.unittest import skip
+from django.utils.decorators import classonlymethod
+import taskboard
 
 
 class BoardApi(object):
@@ -19,14 +21,27 @@ class BoardApi(object):
                     return getattr(self, asserter)
         return super(BoardApi, self)._getAssertEqualityFunc(first, second)
 
+    @classonlymethod
+    def setUpClass(cls):
+        super(BoardApi, cls).setUpClass()
+        cls.orig_board_loader = taskboard.board_loader
+
+    @classonlymethod
+    def tearDownClass(cls):
+        super(BoardApi, cls).tearDownClass()
+        taskboard.board_loader = cls.orig_board_loader
+
     def setUp(self):
         super(BoardApi, self).setUp()
         cls = type(self)
+        get_board_objs = []
         for prop_cls_name in filter(lambda name: name.endswith('_cls'), dir(cls)):
             prop_name = prop_cls_name[:-4]
             try:
                 tp_to_create = getattr(cls, prop_cls_name)
                 obj = tp_to_create(self)
+                if hasattr(obj, 'get_board'):
+                    get_board_objs.append(obj)
             except TypeError as e:
                 raise TypeError(
                     'could not create instance of %s (from %s.%s) - %s' % (
@@ -34,6 +49,8 @@ class BoardApi(object):
                     )
                 )
             setattr(self, prop_name, obj)
+        self.assertEquals(1, len(get_board_objs), 'only one helper should provide the board')
+        taskboard.board_loader = get_board_objs[0]
 
     def get_tasks_for(self, owner, status):
         return self.getter.get_tasks_for(

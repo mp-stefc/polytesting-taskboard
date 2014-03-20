@@ -145,12 +145,7 @@ class DjangoClientViewBoardGetter(HtmlSoupBoardGetter):
         change_root_urlconf_to(self.urls)
 
     def get_html(self, board):
-        _orig_view_get_board_fn = TaskBoardView.get_board
-        try:
-            TaskBoardView.get_board = lambda *a, **kw: board
-            return self.client.get('/').content
-        finally:
-            TaskBoardView.get_board = _orig_view_get_board_fn 
+        return self.client.get('/').content
 
 
 class InMemoryTaskMover(IgnoreTestCaseInit):
@@ -175,21 +170,16 @@ class HttpTaskMover(object):
         change_root_urlconf_to(self.urls)
 
     def move_task(self, board, url, to_owner, to_status):
-        orig_get_board = MoveTaskView.get_board
-        try:
-            MoveTaskView.get_board = lambda *a, **kw: board
-            post_data = dict(
-                url=url, to_owner=to_owner, to_status=to_status)
-            url_to_post_to = reverse('move_task')
-            response = self.client.post(url_to_post_to, post_data)
-            if response.status_code != 302:
-                raise Exception('expected HTTP 302 on successful post, got %(status)s while posting %(payload)r to %(url)s ' % dict(
-                    status=response.status_code,
-                    payload=post_data,
-                    url=url_to_post_to
-                ))
-        finally:
-            MoveTaskView.get_board = orig_get_board
+        post_data = dict(
+            url=url, to_owner=to_owner, to_status=to_status)
+        url_to_post_to = reverse('move_task')
+        response = self.client.post(url_to_post_to, post_data)
+        if response.status_code != 302:
+            raise Exception('expected HTTP 302 on successful post, got %(status)s while posting %(payload)r to %(url)s ' % dict(
+                status=response.status_code,
+                payload=post_data,
+                url=url_to_post_to
+            ))
 
     def get_move_log(self, board):
         return board.get_move_logs()
