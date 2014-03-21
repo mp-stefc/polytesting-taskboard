@@ -136,7 +136,7 @@ def change_root_urlconf_to(urls):
     clear_url_caches() 
 
 
-class DjangoClientViewBoardGetter(HtmlSoupBoardGetter):
+class DjangoClientHtmlViewBoardGetter(HtmlSoupBoardGetter):
 
     class urls:
         urlpatterns = patterns('',
