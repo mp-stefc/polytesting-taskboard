@@ -174,6 +174,7 @@ class HttpTaskMover(BaseGetter):
         url_to_post_to = reverse('move_task')
         response = self.client.post(url_to_post_to, post_data)
         if response.status_code != 302:
+            # TODO: introduce a better exception
             raise Exception('expected HTTP 302 on successful post, got %(status)s while posting %(payload)r to %(url)s ' % dict(
                 status=response.status_code,
                 payload=post_data,

@@ -118,12 +118,12 @@ class DisplayingTasksInMemoryBoard(DisplayingTasks, TestCase):
     getter_cls = PurePythonBoardGetter
 
 
-class DisplayingTasksTemplateRenderingInMemoryBoardViewTest(DisplayingTasks, TestCase):
+class DisplayingTasksHtmlTemplateRenderingInMemoryBoard(DisplayingTasks, TestCase):
     builder_cls = PurePythonBoardBuilder
     getter_cls = TemplateRenderingBoardGetter
 
 
-class DisplayingTasksViaDjangoClientInMemoryBoardViewTest(DisplayingTasks, TestCase):
+class DisplayingTasksHtmlViewViaDjangoClientInMemoryBoard(DisplayingTasks, TestCase):
 
     urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
     builder_cls = PurePythonBoardBuilder
@@ -165,6 +165,11 @@ class MovingSingleTaskOnTwoByTwoBoard(BoardApi):
         self.mover.move_task(url, to_owner, to_status)
 
     def assert_single_tasks_location_is(self, owner, status):
+        # TODO: this is pretty inefficient in its current form,
+        #   wonder whether 
+        #   a) this neccessiates using caching headers
+        #   b) makes me "cache" in the test - self.change_... method
+        #      resets self.actual_board and this method only initializes
         expected = {}
         actual = {}
         for owner_l in self.get_owners():
@@ -176,13 +181,13 @@ class MovingSingleTaskOnTwoByTwoBoard(BoardApi):
         expected[owner][status] = [{'name': 'task', 'href': '/task'}]
         self.assertEquals(expected, actual)
 
-
+# TODO: resolve PurePython vs. InMemory - inconsistent
 class MovingTasksInMemoryBoard(MovingSingleTaskOnTwoByTwoBoard, TestCase):
     builder_cls = PurePythonBoardBuilder
     getter_cls = PurePythonBoardGetter
     mover_cls = InMemoryTaskMover
 
-class MovingTasksViaDjangoClientInMemoryBoardViewTest(MovingSingleTaskOnTwoByTwoBoard, TestCase):
+class MovingTasksHtmlViaDjangoClientViewInMemoryBoard(MovingSingleTaskOnTwoByTwoBoard, TestCase):
 
     urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
     builder_cls = PurePythonBoardBuilder
