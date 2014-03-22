@@ -36,6 +36,8 @@ class TaskBoard(object):
     def get_states(self):
         return self.data.values()[0].keys()
         
+    def as_nested_dict(self):
+        return od((k, od(v)) for (k, v) in self.data.iteritems())
 
 ###
 

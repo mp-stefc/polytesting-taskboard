@@ -2,7 +2,7 @@ from django.test import TestCase
 from taskboard.test_helpers import (
     PurePythonBoardBuilder, PurePythonBoardGetter,
     TemplateRenderingBoardGetter, DjangoClientHtmlViewBoardGetter,
-    InMemoryTaskMover, HttpTaskMover,
+    DjangoClientJsonViewBoardGetter, InMemoryTaskMover, HttpTaskMover,
 )
 from django.utils.unittest import skip
 from django.utils.decorators import classonlymethod
@@ -128,6 +128,13 @@ class DisplayingTasksHtmlViewViaDjangoClientInMemoryBoard(DisplayingTasks, TestC
     urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
     builder_cls = PurePythonBoardBuilder
     getter_cls = DjangoClientHtmlViewBoardGetter
+
+
+class DisplayingTasksJsonViewViaDjangoClientInMemoryBoard(DisplayingTasks, TestCase):
+
+    urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
+    builder_cls = PurePythonBoardBuilder
+    getter_cls = DjangoClientJsonViewBoardGetter
 
 
 class MovingSingleTaskOnTwoByTwoBoard(BoardApi):

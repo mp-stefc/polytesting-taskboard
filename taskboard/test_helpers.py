@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import tempfile
+from collections import OrderedDict as od
 import os
 from django.core.urlresolvers import clear_url_caches, set_urlconf, reverse
 from django.conf import settings
@@ -8,6 +9,7 @@ from django.conf.urls import patterns
 from django.template.loader import render_to_string
 from taskboard.views import TaskBoardView, MoveTaskView
 import taskboard
+import traceback
 
 
 class SoupSelectionList(list):
@@ -150,6 +152,50 @@ class DjangoClientHtmlViewBoardGetter(HtmlSoupBoardGetter):
     def get_html(self):
         return self.client.get('/').content
 
+
+class DjangoClientJsonViewBoardGetter(BaseGetter):
+
+    class urls:
+        urlpatterns = patterns('',
+            (r'^json/$', TaskBoardView.as_view(response_format='json')),
+        )
+
+    def __init__(self, testcase):
+        self.client = testcase.client
+        change_root_urlconf_to(self.urls)
+
+    def get_parsed_json(self):
+        import json
+        # TODO: I'm kinda torn here. I would prefer single url
+        # with HTTP_ACCEPT headers, but that might make easy
+        # debugging of the app (by inspecting the response in the
+        # browser hard
+        response_body = self.client.get('/json/').content
+        try:
+            return json.loads(response_body, object_pairs_hook=od)
+        except ValueError:
+            raise ValueError('%s\n---\n%s' % (traceback.format_exc(), response_body))
+    
+    def get_owners(self):
+        parsed = self.get_parsed_json()
+        try:
+            return parsed.keys()
+        except AttributeError:
+            raise AttributeError('\n\n%r\n%s' % (parsed, traceback.format_exc()))
+
+    def get_states(self):
+        parsed = self.get_parsed_json()
+        try:
+            return parsed.values()[0].keys()
+        except AttributeError:
+            raise AttributeError('\n\n%r\n%s' % (parsed, traceback.format_exc()))
+
+    def get_tasks_for(self, owner, status):
+        parsed = self.get_parsed_json()
+        try:
+            return parsed[owner][status]
+        except KeyError:
+            raise KeyError('\n\n%r\n%s' % (parsed, traceback.format_exc()))
 
 class InMemoryTaskMover(BaseGetter):
 
