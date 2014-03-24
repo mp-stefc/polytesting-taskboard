@@ -197,7 +197,7 @@ class DjangoClientJsonViewBoardGetter(BaseGetter):
         except KeyError:
             raise KeyError('\n\n%r\n%s' % (parsed, traceback.format_exc()))
 
-class InMemoryTaskMover(BaseGetter):
+class PurePythonTaskMover(BaseGetter):
 
     def move_task(self, url, to_owner, to_status):
         self.get_board().move(url, to_owner, to_status)

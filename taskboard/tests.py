@@ -2,7 +2,7 @@ from django.test import TestCase
 from taskboard.test_helpers import (
     PurePythonBoardBuilder, PurePythonBoardGetter,
     TemplateRenderingBoardGetter, DjangoClientHtmlViewBoardGetter,
-    DjangoClientJsonViewBoardGetter, InMemoryTaskMover, HttpTaskMover,
+    DjangoClientJsonViewBoardGetter, PurePythonTaskMover, HttpTaskMover,
 )
 from django.utils.unittest import skip
 from django.utils.decorators import classonlymethod
@@ -113,24 +113,24 @@ class DisplayingTasks(BoardApi):
             self.get_tasks_for(owner='Dan', status='Closed'))
 
 
-class DisplayingTasksInMemoryBoard(DisplayingTasks, TestCase):
+class DisplayingTasksPurePythonBoard(DisplayingTasks, TestCase):
     builder_cls = PurePythonBoardBuilder
     getter_cls = PurePythonBoardGetter
 
 
-class DisplayingTasksHtmlTemplateRenderingInMemoryBoard(DisplayingTasks, TestCase):
+class DisplayingTasksHtmlTemplateRenderingPurePythonBoard(DisplayingTasks, TestCase):
     builder_cls = PurePythonBoardBuilder
     getter_cls = TemplateRenderingBoardGetter
 
 
-class DisplayingTasksHtmlViewViaDjangoClientInMemoryBoard(DisplayingTasks, TestCase):
+class DisplayingTasksHtmlViewViaDjangoClientPurePythonBoard(DisplayingTasks, TestCase):
 
     urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
     builder_cls = PurePythonBoardBuilder
     getter_cls = DjangoClientHtmlViewBoardGetter
 
 
-class DisplayingTasksJsonViewViaDjangoClientInMemoryBoard(DisplayingTasks, TestCase):
+class DisplayingTasksJsonViewViaDjangoClientPurePythonBoard(DisplayingTasks, TestCase):
 
     urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
     builder_cls = PurePythonBoardBuilder
@@ -188,13 +188,12 @@ class MovingSingleTaskOnTwoByTwoBoard(BoardApi):
         expected[owner][status] = [{'name': 'task', 'href': '/task'}]
         self.assertEquals(expected, actual)
 
-# TODO: resolve PurePython vs. InMemory - inconsistent
-class MovingTasksInMemoryBoard(MovingSingleTaskOnTwoByTwoBoard, TestCase):
+class MovingTasksPurePythonBoard(MovingSingleTaskOnTwoByTwoBoard, TestCase):
     builder_cls = PurePythonBoardBuilder
     getter_cls = PurePythonBoardGetter
-    mover_cls = InMemoryTaskMover
+    mover_cls = PurePythonTaskMover
 
-class MovingTasksHtmlViaDjangoClientViewInMemoryBoard(MovingSingleTaskOnTwoByTwoBoard, TestCase):
+class MovingTasksHtmlViaDjangoClientViewPurePythonBoard(MovingSingleTaskOnTwoByTwoBoard, TestCase):
 
     urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
     builder_cls = PurePythonBoardBuilder
