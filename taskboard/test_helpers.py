@@ -11,6 +11,7 @@ from django.template.loader import render_to_string
 from taskboard.views import TaskBoardView, MoveTaskView
 import taskboard
 import traceback
+from taskboard.utils import enhance_exception
 
 
 class SoupSelectionList(list):
@@ -171,31 +172,24 @@ class DjangoClientJsonViewBoardGetter(BaseGetter):
         # debugging of the app (by inspecting the response in the
         # browser hard
         response_body = self.client.get('/json/').content
-        try:
+        with enhance_exception(lambda: response_body):
             return json.loads(response_body, object_pairs_hook=od)
-        except ValueError:
-            raise ValueError('%s\n---\n%s' % (traceback.format_exc(), response_body))
     
     def get_owners(self):
         parsed = self.get_parsed_json()
-        try:
+        with enhance_exception(lambda: parsed):
             return parsed.keys()
-        except AttributeError:
-            raise AttributeError('\n\n%r\n%s' % (parsed, traceback.format_exc()))
 
     def get_states(self):
         parsed = self.get_parsed_json()
-        try:
+        with enhance_exception(lambda: parsed):
             return parsed.values()[0].keys()
-        except AttributeError:
-            raise AttributeError('\n\n%r\n%s' % (parsed, traceback.format_exc()))
 
     def get_tasks_for(self, owner, status):
         parsed = self.get_parsed_json()
-        try:
+        with enhance_exception(lambda: parsed):
             return parsed[owner][status]
-        except KeyError:
-            raise KeyError('\n\n%r\n%s' % (parsed, traceback.format_exc()))
+
 
 class PurePythonTaskMover(BaseGetter):
 
