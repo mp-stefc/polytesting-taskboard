@@ -14,7 +14,7 @@ class enhance_exception(object):
             return
         orig_format_exc = tb_mod.format_exc()
         try:
-            extra_msg = self.extra_msg_fn()
+            extra_msg = '%s' % self.extra_msg_fn()
         except:
             extra_msg = 'Error while trying to enahnce exception:\n%s' % tb_mod.format_exc()
         raise exc_type('\n===\n'.join([orig_format_exc, extra_msg]))

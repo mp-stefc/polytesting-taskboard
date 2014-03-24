@@ -45,7 +45,18 @@ class EnhancingExceptionsTests(TestCase):
         self.assert_contains(needle='TestException', haystack=final_format_exc)
         self.assert_contains(needle='something went wrong', haystack=final_format_exc)
         self.assert_contains(needle='ValueError', haystack=final_format_exc)
-        
+
+    def test_if_extra_msg_fn_returns_non_str_it_is_handled_gracefully(self):
+        def try_block():
+            raise TestException('some exception')
+
+        orig_format_exc, final_format_exc = self.run_with_enhanced_exception(
+            extra_msg_fn=lambda: {'foo': 'bar'},
+            try_block_fn=try_block,
+            expected_exc_type=TestException)
+
+        self.assert_contains(needle='some exception', haystack=final_format_exc)
+        self.assert_contains(needle=repr({'foo': 'bar'}), haystack=final_format_exc)
 
     def run_with_enhanced_exception(self, extra_msg_fn, try_block_fn, expected_exc_type=None):
         expected_exc_type = expected_exc_type or TestException
