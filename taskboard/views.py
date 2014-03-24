@@ -18,7 +18,6 @@ class TaskBoardView(TemplateView):
         return super(TaskBoardView, self).render_to_response(context, **response_kwargs)
 
     def get_context_data(self, **kwargs):
-        from django.core.serializers.json import DjangoJSONEncoder
         return super(TaskBoardView, self).get_context_data(
             board=taskboard.board_loader.get_board(),
             **kwargs
@@ -33,7 +32,7 @@ class MoveTaskView(FormView):
         return super(MoveTaskView, self).dispatch(request)
 
     class form_class(forms.Form):
-        # TODO: why do I need to specify it here?
+        # TODO: why do I need to specify max_length here?
         url = forms.CharField(max_length=255)
         to_owner = forms.CharField(max_length=255)
         to_status = forms.CharField(max_length=255)
