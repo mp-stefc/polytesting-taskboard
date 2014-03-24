@@ -60,7 +60,7 @@ class SoupSelectionList(list):
             fd.write(self.html)
             return fname + ' '
         except Exception as e:
-            return str(e)
+            return traceback.format_exc()
         finally:
             try:
                 fd.flush()
