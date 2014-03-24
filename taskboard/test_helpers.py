@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import tempfile
 from collections import OrderedDict as od
 import os
+import json
 from django.core.urlresolvers import clear_url_caches, set_urlconf, reverse
 from django.conf import settings
 from django.http import HttpResponse
@@ -165,7 +166,6 @@ class DjangoClientJsonViewBoardGetter(BaseGetter):
         change_root_urlconf_to(self.urls)
 
     def get_parsed_json(self):
-        import json
         # TODO: I'm kinda torn here. I would prefer single url
         # with HTTP_ACCEPT headers, but that might make easy
         # debugging of the app (by inspecting the response in the
