@@ -4,7 +4,6 @@ from taskboard.test_helpers import (
     TemplateRenderingBoardGetter, DjangoClientHtmlViewBoardGetter,
     DjangoClientJsonViewBoardGetter, PurePythonTaskMover, HttpTaskMover,
 )
-from django.utils.unittest import skip
 from django.utils.decorators import classonlymethod
 import taskboard
 
