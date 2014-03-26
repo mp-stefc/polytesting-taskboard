@@ -139,38 +139,37 @@ def change_root_urlconf_to(urls):
     settings.ROOT_URLCONF = urls
     clear_url_caches() 
 
+class WithOwnClientAndUrlpatterns(object):
 
-class DjangoClientHtmlViewBoardGetter(HtmlSoupBoardGetter):
+    def __init__(self, testcase):
+        self.client = testcase.client
+        change_root_urlconf_to(self.urls)
+
+
+
+class DjangoClientHtmlViewBoardGetter(WithOwnClientAndUrlpatterns, HtmlSoupBoardGetter):
 
     class urls:
         urlpatterns = patterns('',
             (r'^$', TaskBoardView.as_view()),
         )
 
-    def __init__(self, testcase):
-        self.client = testcase.client
-        change_root_urlconf_to(self.urls)
-
     def get_html(self):
         return self.client.get('/').content
 
 
-class DjangoClientJsonViewBoardGetter(BaseGetter):
+class DjangoClientJsonViewBoardGetter(WithOwnClientAndUrlpatterns, BaseGetter):
 
     class urls:
         urlpatterns = patterns('',
+            # TODO: I'm kinda torn here. I would prefer single url
+            # with HTTP_ACCEPT headers, but that might make easy
+            # debugging of the app (by inspecting the response in the
+            # browser hard
             (r'^json/$', TaskBoardView.as_view(response_format='json')),
         )
 
-    def __init__(self, testcase):
-        self.client = testcase.client
-        change_root_urlconf_to(self.urls)
-
     def get_parsed_json(self):
-        # TODO: I'm kinda torn here. I would prefer single url
-        # with HTTP_ACCEPT headers, but that might make easy
-        # debugging of the app (by inspecting the response in the
-        # browser hard
         response_body = self.client.get('/json/').content
         with enhance_exception(lambda: response_body):
             return json.loads(response_body, object_pairs_hook=od)
@@ -198,17 +197,13 @@ class PurePythonTaskMover(BaseGetter):
     def move_task(self, url, to_owner, to_status):
         self.get_board().move(url, to_owner, to_status)
 
-class HttpTaskMover(BaseGetter):
+class HttpTaskMover(WithOwnClientAndUrlpatterns, BaseGetter):
 
     class urls:
         urlpatterns = patterns('',
             (r'^move/$', MoveTaskView.as_view(), {'success_url_reverse_name': 'move_success'}, 'move_task'),
             (r'^success/$', lambda *a, **kw: HttpResponse('OK'), {}, 'move_success'),
         )
-
-    def __init__(self, testcase):
-        self.client = testcase.client
-        change_root_urlconf_to(self.urls)
 
     def move_task(self, url, to_owner, to_status):
         post_data = dict(
