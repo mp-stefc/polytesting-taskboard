@@ -139,12 +139,12 @@ def change_root_urlconf_to(urls):
     settings.ROOT_URLCONF = urls
     clear_url_caches() 
 
+
 class WithOwnClientAndUrlpatterns(object):
 
     def __init__(self, testcase):
         self.client = testcase.client
         change_root_urlconf_to(self.urls)
-
 
 
 class DjangoClientHtmlViewBoardGetter(WithOwnClientAndUrlpatterns, HtmlSoupBoardGetter):
