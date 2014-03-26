@@ -28,7 +28,7 @@ class BaseBoardTestCaseMixin(object):
         super(BaseBoardTestCaseMixin, self).setUp()
         cls = type(self)
         board_builder_objs = []
-        for prop_cls_name in filter(lambda name: name.endswith('_cls'), dir(cls)):
+        for prop_cls_name in cls.get_test_api_classes():
             prop_name = prop_cls_name[:-4]
             try:
                 tp_to_create = getattr(cls, prop_cls_name)
@@ -44,6 +44,10 @@ class BaseBoardTestCaseMixin(object):
             setattr(self, prop_name, obj)
         self.assertEquals(1, len(board_builder_objs), 'only one helper should build the board, but got multiple: %s' % ', '.join('%s' % type(x) for x in board_builder_objs))
         taskboard.board_loader = board_builder_objs[0]
+
+    @classonlymethod
+    def get_test_api_classes(cls):
+        return filter(lambda name: name.endswith('_cls'), dir(cls))
 
 
 class BoardApi(BaseBoardTestCaseMixin):
