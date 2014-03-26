@@ -2,6 +2,7 @@ import sys
 import traceback as tb_mod
 
 
+# TODO: take a look at six.reraise
 class enhance_exception(object):
     def __init__(self, extra_msg_fn):
         self.extra_msg_fn = extra_msg_fn
