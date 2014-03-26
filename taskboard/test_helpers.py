@@ -176,19 +176,21 @@ class DjangoClientJsonViewBoardGetter(BaseGetter):
             return json.loads(response_body, object_pairs_hook=od)
     
     def get_owners(self):
-        parsed = self.get_parsed_json()
-        with enhance_exception(lambda: parsed):
-            return parsed.keys()
+        return self._get_from_parsed_json(
+            lambda parsed: parsed.keys())
 
     def get_states(self):
-        parsed = self.get_parsed_json()
-        with enhance_exception(lambda: parsed):
-            return parsed.values()[0].keys()
+        return self._get_from_parsed_json(
+            lambda parsed: parsed.values()[0].keys())
 
     def get_tasks_for(self, owner, status):
+        return self._get_from_parsed_json(
+            lambda parsed: parsed[owner][status])
+
+    def _get_from_parsed_json(self, map_fn):
         parsed = self.get_parsed_json()
         with enhance_exception(lambda: parsed):
-            return parsed[owner][status]
+            return map_fn(parsed)
 
 
 class PurePythonTaskMover(BaseGetter):
