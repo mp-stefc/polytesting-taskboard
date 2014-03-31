@@ -1,4 +1,6 @@
 from django.utils.decorators import classonlymethod
+from django.test import LiveServerTestCase
+from selenium.webdriver.firefox.webdriver import WebDriver
 import taskboard
 
 
@@ -18,17 +20,19 @@ class BaseBoardTestCaseMixin(object):
     def setUpClass(cls):
         super(BaseBoardTestCaseMixin, cls).setUpClass()
         cls.orig_board_loader = taskboard.board_loader
+        cls.start_liveserver_if_needed()
 
     @classonlymethod
     def tearDownClass(cls):
         super(BaseBoardTestCaseMixin, cls).tearDownClass()
         taskboard.board_loader = cls.orig_board_loader
+        cls.stop_liveserver_if_needed()
 
     def setUp(self):
         super(BaseBoardTestCaseMixin, self).setUp()
         cls = type(self)
         board_builder_objs = []
-        for prop_cls_name in cls.get_test_api_classes():
+        for prop_cls_name in cls.get_test_api_class_names():
             prop_name = prop_cls_name[:-4]
             try:
                 tp_to_create = getattr(cls, prop_cls_name)
@@ -46,8 +50,37 @@ class BaseBoardTestCaseMixin(object):
         taskboard.board_loader = board_builder_objs[0]
 
     @classonlymethod
-    def get_test_api_classes(cls):
+    def get_test_api_class_names(cls):
         return filter(lambda name: name.endswith('_cls'), dir(cls))
+
+    @classonlymethod
+    def get_test_api_classes(cls):
+        return map(
+            lambda name: getattr(cls, name),
+            cls.get_test_api_class_names())
+
+    @classonlymethod
+    def start_liveserver_if_needed(cls):
+        cls.liveserver_url = None
+        for api_cls in cls.get_test_api_classes():
+            if not getattr(api_cls, 'needs_live_server', False):
+                continue
+            if cls.liveserver_url is None:
+                LiveServerTestCase.setUpClass()
+                cls.selenium = WebDriver()
+                # inlined from LiveServerTestCase
+                cls.liveserver_url = 'http://%s:%s' % (
+                    LiveServerTestCase.server_thread.host, LiveServerTestCase.server_thread.port)
+            api_cls.server_thread = LiveServerTestCase.server_thread
+            api_cls.selenium = cls.selenium
+            api_cls.liveserver_url = cls.liveserver_url
+        cls.has_liveserver = cls.liveserver_url is not None
+        
+    @classonlymethod
+    def stop_liveserver_if_needed(cls):
+        if cls.has_liveserver:
+            LiveServerTestCase.tearDownClass()
+            cls.selenium.quit()
 
 
 class BoardApi(BaseBoardTestCaseMixin):

@@ -158,6 +158,24 @@ class DjangoClientHtmlViewBoardGetter(WithOwnClientAndUrlpatterns, HtmlSoupBoard
         return self.client.get('/').content
 
 
+class SeleniumHtmlViewBoardGetter(HtmlSoupBoardGetter):
+    needs_live_server = True
+    liveserver_url = None
+
+    class urls:
+        urlpatterns = patterns('',
+            (r'^$', TaskBoardView.as_view()),
+        )
+
+    def get_html(self):
+        full_url = '%s%s' % (self.liveserver_url, '/')
+        self.selenium.get(full_url)
+        return self.selenium.page_source
+
+    def __init__(self, testcase):
+        change_root_urlconf_to(self.urls)
+
+
 class DjangoClientJsonViewBoardGetter(WithOwnClientAndUrlpatterns, BaseGetter):
 
     class urls:
