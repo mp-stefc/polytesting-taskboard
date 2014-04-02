@@ -1,7 +1,77 @@
 {% load taskboard_task %}
 <html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="/static/style.css">
+        <style type="text/css"></style>
+        <script type="text/javascript" src="/static/jquery.min.js"></script>
+        <script type="text/javascript" src="/static/jquery-ui.min.js"></script>
+        <script type="text/javascript">
+            <!-- 
+$( init );
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+function init() {
+    
+    $('td.assignment-slot').each(function() {
+        $(this).data(
+            'owner', this.attributes['owner'].value
+        ).data(
+            'state', this.attributes['state'].value
+        ).data(
+            'csrftoken', getCookie('csrftoken')
+        ).droppable({
+            accept: 'a.task',
+            hoverClass: 'hovered',
+            drop: handleTaskDrop
+        });
+    });
+    $('a.task').each(function() {
+        $(this).draggable({
+            containment: 'table.taskboard',
+            stack: 'a.task',
+            cursor: 'move',
+            revert: true
+        })
+    });
+}
+
+function handleTaskDrop(event, ui) {
+    // this: target where the thing is dropped
+    a = ui.draggable[0];
+    target_data = $(this).data();
+    url = a.attributes['href'].value;
+    to_owner = target_data.owner;
+    to_status = target_data.state;
+    csrftoken = target_data.csrftoken;
+    post_data = {url: url, to_owner: to_owner, to_status: to_status, csrfmiddlewaretoken: csrftoken}
+    window.console.log('moving ' + post_data);
+    jQuery.ajax({
+        url: '/move/',
+        type: 'POST',
+        dataType: 'html',
+        requestHeaders: {'X-CSRFToken': csrftoken},
+        data: post_data
+    }).fail(function(x) { alert(x.responseText); });
+}
+            // -->
+        </script>
+    </head>
     <body>
-        <table>
+        <table class="taskboard">
+            {% csrf_token %}
             <tr>
                 <td></td>
                 {% for state in board.get_states %}
@@ -12,7 +82,7 @@
                 <tr>
                     <td class="owner">{{ owner }}</td>
                     {% for state in board.get_states %}
-                        <td>
+                        <td class="assignment-slot" owner="{{owner}}" state="{{state}}">
                             {% tb_tasks board owner state %}
                         </td>
                     {% endfor %}

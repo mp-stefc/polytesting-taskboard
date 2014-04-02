@@ -1,6 +1,13 @@
 from collections import OrderedDict as od
 
-board_loader = None
+class BoardLoader(object):
+    def get_board(self):
+        board = TaskBoard(['Jane', 'John'], ['Open', 'Closed'])
+        board.add_task(owner='Jane', status='Open', href='/tasks/1/', name='first task')
+        return board
+
+
+board_loader = BoardLoader()
 
 
 class TaskBoard(object):
