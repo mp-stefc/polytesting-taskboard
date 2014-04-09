@@ -2,6 +2,9 @@ from django.utils.decorators import classonlymethod
 from django.test import LiveServerTestCase
 from selenium.webdriver.firefox.webdriver import WebDriver
 import taskboard
+from django.core.urlresolvers import clear_url_caches, set_urlconf
+from django.conf.urls import patterns
+from django.conf import settings
 
 
 class BaseBoardTestCaseMixin(object):
@@ -21,6 +24,26 @@ class BaseBoardTestCaseMixin(object):
         super(BaseBoardTestCaseMixin, cls).setUpClass()
         cls.orig_board_loader = taskboard.board_loader
         cls.start_liveserver_if_needed()
+        cls.setup_root_urlconf_if_needed()
+
+    @classonlymethod
+    def setup_root_urlconf_if_needed(cls):
+        urlpatterns = list(
+            test_cls.urls.urlpatterns 
+            for test_cls in cls.get_test_api_classes()
+            if hasattr(test_cls, 'urls'))
+        consolidated = reduce(lambda a, b: a + b, urlpatterns, [])
+        class urls:
+            urlpatterns = consolidated
+        cls.urls = urls
+
+        def change_root_urlconf_to(urls):
+            # TODO: copied from django.test.SimpleTestCase._urlconf_setup - PR upstairs to make it availabel outside testing too?
+            set_urlconf(None)
+            settings.ROOT_URLCONF = urls
+            clear_url_caches() 
+
+        change_root_urlconf_to(cls.urls)
 
     @classonlymethod
     def tearDownClass(cls):

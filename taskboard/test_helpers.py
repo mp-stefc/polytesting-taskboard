@@ -4,7 +4,6 @@ from collections import OrderedDict as od
 import os
 import json
 from django.core.urlresolvers import clear_url_caches, set_urlconf, reverse
-from django.conf import settings
 from django.http import HttpResponse
 from django.conf.urls import patterns
 from django.template.loader import render_to_string
@@ -133,18 +132,12 @@ class TemplateRenderingBoardGetter(HtmlSoupBoardGetter):
         return render_to_string('taskboard/board.html', {'board': self.get_board()})
 
 
-def change_root_urlconf_to(urls):
-    # TODO: copied from django.test.SimpleTestCase._urlconf_setup - PR upstairs to make it availabel outside testing too?
-    set_urlconf(None)
-    settings.ROOT_URLCONF = urls
-    clear_url_caches() 
 
 
 class WithOwnClientAndUrlpatterns(object):
 
     def __init__(self, testcase):
         self.client = testcase.client
-        change_root_urlconf_to(self.urls)
 
 
 class DjangoClientHtmlViewBoardGetter(WithOwnClientAndUrlpatterns, HtmlSoupBoardGetter):
@@ -173,7 +166,7 @@ class SeleniumHtmlViewBoardGetter(HtmlSoupBoardGetter):
         return self.selenium.page_source
 
     def __init__(self, testcase):
-        change_root_urlconf_to(self.urls)
+        pass
 
 
 class DjangoClientJsonViewBoardGetter(WithOwnClientAndUrlpatterns, BaseGetter):

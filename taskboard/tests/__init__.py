@@ -51,5 +51,5 @@ class MovingTasksHtmlViaDjangoClientViewPurePythonBoard(MovingSingleTaskOnTwoByT
 
     urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
     builder_cls = PurePythonBoardBuilder
-    getter_cls = PurePythonBoardGetter  # DjangoClientHtmlViewBoardGetter
+    getter_cls = DjangoClientHtmlViewBoardGetter
     mover_cls = HttpTaskMover
