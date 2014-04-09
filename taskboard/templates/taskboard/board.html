@@ -64,7 +64,9 @@ function handleTaskDrop(event, ui) {
         dataType: 'html',
         requestHeaders: {'X-CSRFToken': csrftoken},
         data: post_data
-    }).fail(function(x) { alert(x.responseText); });
+    }).fail(function(x) { alert(x.responseText); }).success(function(x) {
+        ui.draggable.draggable( 'option', 'revert', false );
+    });
 }
             // -->
         </script>

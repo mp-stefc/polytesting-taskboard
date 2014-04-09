@@ -165,9 +165,6 @@ class SeleniumHtmlViewBoardGetter(HtmlSoupBoardGetter):
         self.selenium.get(full_url)
         return self.selenium.page_source
 
-    def __init__(self, testcase):
-        pass
-
 
 class DjangoClientJsonViewBoardGetter(WithOwnClientAndUrlpatterns, BaseGetter):
 
@@ -228,3 +225,25 @@ class HttpTaskMover(WithOwnClientAndUrlpatterns, BaseGetter):
                 payload=post_data,
                 url=url_to_post_to
             ))
+
+from selenium.webdriver.common.action_chains import ActionChains
+
+
+class SeleniumTaskMover(object):
+    needs_live_server = True
+    liveserver_url = None
+
+    class urls:
+        urlpatterns = patterns('',
+            (r'^move/$', MoveTaskView.as_view(), {'success_url_reverse_name': 'move_success'}, 'move_task'),
+            (r'^success/$', lambda *a, **kw: HttpResponse('OK'), {}, 'move_success'),
+        )
+
+    def move_task(self, url, to_owner, to_status):
+        self.selenium.set_script_timeout(1)
+        source = self.selenium.find_element_by_css_selector('a[href="%s"]' % url)
+        target = self.selenium.find_element_by_css_selector('td[owner="%s"][state="%s"]' % (to_owner, to_status))
+        ActionChains(self.selenium).drag_and_drop(source, target).perform()
+
+    def __init__(self, testcase):
+        pass

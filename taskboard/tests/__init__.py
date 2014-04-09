@@ -4,6 +4,7 @@ from taskboard.test_helpers import (
     TemplateRenderingBoardGetter, DjangoClientHtmlViewBoardGetter,
     SeleniumHtmlViewBoardGetter,
     DjangoClientJsonViewBoardGetter, PurePythonTaskMover, HttpTaskMover,
+    SeleniumTaskMover,
 )
 from taskboard.tests.displaying_tasks import DisplayingTasks
 from taskboard.tests.moving_tasks import MovingSingleTaskOnTwoByTwoBoard
@@ -53,3 +54,11 @@ class MovingTasksHtmlViaDjangoClientViewPurePythonBoard(MovingSingleTaskOnTwoByT
     builder_cls = PurePythonBoardBuilder
     getter_cls = DjangoClientHtmlViewBoardGetter
     mover_cls = HttpTaskMover
+
+
+class MovingTasksHtmlViaSeleniumViewPurePythonBoard(MovingSingleTaskOnTwoByTwoBoard, TestCase):
+
+    urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
+    builder_cls = PurePythonBoardBuilder
+    getter_cls = SeleniumHtmlViewBoardGetter
+    mover_cls = SeleniumTaskMover
