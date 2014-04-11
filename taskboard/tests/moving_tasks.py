@@ -27,6 +27,11 @@ class MovingSingleTaskOnTwoByTwoBoard(BoardApi):
 
     def test_can_move_multiple_times(self):
         self.move_task('/task', to_owner='Bob', to_status='Done')
+        # TODO: this assert is only here to deal with timing issues
+        #       in selenium tests. Since it's a selenium issue, and
+        #       the purpose of this project is to demonstrate polytesting
+        #       I'm OK with this HACK
+        self.assert_single_tasks_location_is(owner='Bob', status='Done')
         self.move_task('/task', to_owner='Alice', to_status='Open')
         self.assert_single_tasks_location_is(owner='Alice', status='Open')
 

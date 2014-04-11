@@ -270,12 +270,10 @@ class SeleniumTaskMover(object):
         )
 
     def move_task(self, url, to_owner, to_status):
-        self.selenium.set_script_timeout(1)
         source = self.selenium.find_element_by_css_selector('a[href="%s"]' % url)
         target = self.selenium.find_element_by_css_selector('td[owner="%s"][state="%s"]' % (to_owner, to_status))
         # TODO: use webelement.is_displayed!
         ActionChains(self.selenium).drag_and_drop(source, target).perform()
-        self.selenium.implicitly_wait(0.05)
 
     def __init__(self, testcase):
         pass
