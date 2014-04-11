@@ -38,11 +38,11 @@ class DisplayingTasks(BoardApi):
 
     def test_two_users_two_statuses_two_tasks_same_owner_same_status(self):
         self.a_board(owners=['Dan', 'Emilia'], states=['Open', 'Closed'])
-        self.with_task(name='First', href='1', status='Closed', owner='Dan')
-        self.with_task(name='Second', href='2', status='Closed', owner='Dan')
+        self.with_task(name='First', href='/1', status='Closed', owner='Dan')
+        self.with_task(name='Second', href='/2', status='Closed', owner='Dan')
         self.assertEquals([], self.get_tasks_for(owner='Emilia', status='Open'))
         self.assertEquals([], self.get_tasks_for(owner='Emilia', status='Closed'))
         self.assertEquals([], self.get_tasks_for(owner='Dan', status='Open'))
         self.assertEquals(
-            [{'name': 'First', 'href': '1'}, {'name': 'Second', 'href': '2'}],
+            [{'name': 'First', 'href': '/1'}, {'name': 'Second', 'href': '/2'}],
             self.get_tasks_for(owner='Dan', status='Closed'))
