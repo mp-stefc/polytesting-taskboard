@@ -160,11 +160,40 @@ class SeleniumHtmlViewBoardGetter(HtmlSoupBoardGetter):
             (r'^$', TaskBoardView.as_view()),
         )
 
-    def get_html(self):
+    def get_owners(self):
+        return self.filter_map(
+            'td.owner',
+            lambda td: td.text
+        )
+
+    def get_states(self):
+        return self.filter_map(
+            'th',
+            lambda th: th.text
+        )
+
+    def get_tasks_for(self, owner, status):
+        def to_href(a):
+            href = a.get_attribute('href')
+            if href.startswith(self.liveserver_url):
+                href = href[len(self.liveserver_url):]
+            return href
+
+        return self.filter_map(
+            self.get_tasks_selector_css_for(owner, status),
+            lambda a: dict(name=a.text, href=to_href(a))
+        )
+
+    def get_tasks_selector_css_for(self, owner, status):
+        return 'td[owner=%s][state=%s] a' % (owner, status)
+
+    def filter_map(self, css_selector, map_fn):
         full_url = '%s%s' % (self.liveserver_url, '/')
         if self.selenium.current_url != full_url:
             self.selenium.get(full_url)
-        return self.selenium.page_source
+            self.selenium.implicitly_wait(0.05)
+        matches = self.selenium.find_elements_by_css_selector(css_selector)
+        return map(map_fn, matches)
 
 
 class DjangoClientJsonViewBoardGetter(WithOwnClientAndUrlpatterns, BaseGetter):
@@ -244,7 +273,9 @@ class SeleniumTaskMover(object):
         self.selenium.set_script_timeout(1)
         source = self.selenium.find_element_by_css_selector('a[href="%s"]' % url)
         target = self.selenium.find_element_by_css_selector('td[owner="%s"][state="%s"]' % (to_owner, to_status))
+        # TODO: use webelement.is_displayed!
         ActionChains(self.selenium).drag_and_drop(source, target).perform()
+        self.selenium.implicitly_wait(0.05)
 
     def __init__(self, testcase):
         pass
