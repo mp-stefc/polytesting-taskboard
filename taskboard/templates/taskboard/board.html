@@ -51,7 +51,8 @@ function init() {
 function handleTaskDrop(event, ui) {
     // this: target where the thing is dropped
     a = ui.draggable[0];
-    target_data = $(this).data();
+    target_td = $(this);
+    target_data = target_td.data();
     url = a.attributes['href'].value;
     to_owner = target_data.owner;
     to_status = target_data.state;
@@ -65,7 +66,7 @@ function handleTaskDrop(event, ui) {
         requestHeaders: {'X-CSRFToken': csrftoken},
         data: post_data
     }).fail(function(x) { alert(x.responseText); }).success(function(x) {
-        ui.draggable.draggable( 'option', 'revert', false );
+        $(a).appendTo(target_td)
     });
 }
             // -->
