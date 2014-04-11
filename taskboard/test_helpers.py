@@ -162,7 +162,8 @@ class SeleniumHtmlViewBoardGetter(HtmlSoupBoardGetter):
 
     def get_html(self):
         full_url = '%s%s' % (self.liveserver_url, '/')
-        self.selenium.get(full_url)
+        if self.selenium.current_url != full_url:
+            self.selenium.get(full_url)
         return self.selenium.page_source
 
 

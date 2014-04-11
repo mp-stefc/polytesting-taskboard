@@ -54,6 +54,7 @@ class BaseBoardTestCaseMixin(object):
     def setUp(self):
         super(BaseBoardTestCaseMixin, self).setUp()
         cls = type(self)
+        cls.reset_webdriver_if_needed()
         board_builder_objs = []
         for prop_cls_name in cls.get_test_api_class_names():
             prop_name = prop_cls_name[:-4]
@@ -104,6 +105,11 @@ class BaseBoardTestCaseMixin(object):
         if cls.has_liveserver:
             LiveServerTestCase.tearDownClass()
             cls.selenium.quit()
+
+    @classonlymethod
+    def reset_webdriver_if_needed(cls):
+        if cls.has_liveserver:
+            cls.selenium.get('about:blank')
 
 
 class BoardApi(BaseBoardTestCaseMixin):

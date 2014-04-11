@@ -7,9 +7,11 @@ class DisplayingTasks(BoardApi):
         self.a_board(owners=['a', 'b', 'c'], states=['x', 'y'])
         self.assertEquals(['a', 'b', 'c'], self.get_owners())
         self.assertEquals(['x', 'y'], self.get_states())
-        self.a_board(owners=['y', 'x'], states=['c', 'b', 'a'])
-        self.assertEquals(['y', 'x'], self.get_owners())
-        self.assertEquals(['c', 'b', 'a'], self.get_states())
+
+    def test_constructing_a_board_owner_state_order_is_preserved_no_natural_ordering(self):
+        self.a_board(owners=['y', 'z', 'w', 'x'], states=['c', 'a', 'b'])
+        self.assertEquals(['y', 'z', 'w', 'x'], self.get_owners())
+        self.assertEquals(['c', 'a', 'b'], self.get_states())
 
     def test_single_user_single_status_single_task_placed_correctly(self):
         self.a_board(owners=['Alice'], states=['Open'])
