@@ -79,7 +79,7 @@ class BaseGetter(object):
 
 class PurePythonBoardBuilder(BaseGetter):
 
-    def a_board(self, owners, states):
+    def given_a_board(self, owners, states):
         self.board = taskboard.TaskBoard(owners=owners, states=states)
 
     def with_task(self, owner, name, href, status):

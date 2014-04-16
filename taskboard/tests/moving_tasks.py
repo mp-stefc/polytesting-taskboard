@@ -5,7 +5,7 @@ class MovingSingleTaskOnTwoByTwoBoard(BoardApi):
 
     def setUp(self):
         super(MovingSingleTaskOnTwoByTwoBoard, self).setUp()
-        self.a_board(owners=['Alice', 'Bob'], states=['Open', 'Done'])
+        self.given_a_board(owners=['Alice', 'Bob'], states=['Open', 'Done'])
         self.with_task(owner='Alice', name='task', href='/task', status='Open')
         self.assert_single_tasks_location_is(owner='Alice', status='Open')
 

@@ -61,7 +61,7 @@ class BaseBoardTestCaseMixin(object):
             try:
                 tp_to_create = getattr(cls, prop_cls_name)
                 obj = tp_to_create(self)
-                if hasattr(obj, 'a_board'):
+                if hasattr(obj, 'given_a_board'):
                     board_builder_objs.append(obj)
             except TypeError as e:
                 raise TypeError(
@@ -122,8 +122,8 @@ class BoardApi(BaseBoardTestCaseMixin):
     def get_states(self):
         return self.getter.get_states()
 
-    def a_board(self, owners, states):
-        self.builder.a_board(owners, states)
+    def given_a_board(self, owners, states):
+        self.builder.given_a_board(owners, states)
 
     def with_task(self, owner, name, href, status):
         self.builder.with_task(owner, name, href, status)
