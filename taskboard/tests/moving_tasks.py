@@ -5,8 +5,13 @@ class MovingSingleTaskOnTwoByTwoBoard(BoardApi):
 
     def setUp(self):
         super(MovingSingleTaskOnTwoByTwoBoard, self).setUp()
-        self.given_a_board(owners=['Alice', 'Bob'], states=['Open', 'Done'])
-        self.with_task(owner='Alice', name='task', href='/task', status='Open')
+        self.given_a_board(
+            owners=['Alice', 'Bob'], states=['Open', 'Done'],
+            with_tasks=[{
+                'owner': 'Alice', 'status': 'Open',
+                'name': 'task', 'href': '/task'
+            }]
+        )
         self.assert_single_tasks_location_is(owner='Alice', status='Open')
 
     def test_can_move_to_same_status_different_person(self):

@@ -122,8 +122,5 @@ class BoardApi(BaseBoardTestCaseMixin):
     def get_states(self):
         return self.getter.get_states()
 
-    def given_a_board(self, owners, states):
-        self.builder.given_a_board(owners, states)
-
-    def with_task(self, owner, name, href, status):
-        self.builder.with_task(owner, name, href, status)
+    def given_a_board(self, owners, states, with_tasks=None):
+        self.builder.given_a_board(owners, states, with_tasks)

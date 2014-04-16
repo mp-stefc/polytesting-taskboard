@@ -79,11 +79,12 @@ class BaseGetter(object):
 
 class PurePythonBoardBuilder(BaseGetter):
 
-    def given_a_board(self, owners, states):
+    def given_a_board(self, owners, states, with_tasks=None):
+        if with_tasks is None:
+            with_tasks = []
         self.board = taskboard.TaskBoard(owners=owners, states=states)
-
-    def with_task(self, owner, name, href, status):
-        self.board.add_task(owner=owner, name=name, href=href, status=status)
+        for task_kwargs in with_tasks:
+            self.board.add_task(**task_kwargs)
 
     def get_board(self):
         return self.board
