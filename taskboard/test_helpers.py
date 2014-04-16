@@ -1,7 +1,3 @@
-from bs4 import BeautifulSoup
-import tempfile
-from collections import OrderedDict as od
-import os
 import json
 from django.core.urlresolvers import clear_url_caches, set_urlconf, reverse
 from django.http import HttpResponse
@@ -9,64 +5,9 @@ from django.conf.urls import patterns
 from django.template.loader import render_to_string
 from taskboard.views import TaskBoardView, MoveTaskView
 import taskboard
-import traceback
 from enhance_exception import enhance_exception
+from polytesting import SoupSelectionList, WithTestClient, WithWebdriver, JsonLoader
 
-
-class SoupSelectionList(list):
-    def __init__(self, html, filter_, map_):
-        self.html = html
-        self.soup = BeautifulSoup(self.html)
-        self.extend(map(map_, filter_(self.soup)))
-        self.dumped_file_name = None
-
-    def __repr__(self):
-        """ this is only called when the comparison failes, 
-            so in a way it is lazy. However, unittest.util.safe_repr
-            (used in assertSequenceEqual
-            will truncate it at _MAX_LENGTH, and if we prefix the
-            list with text will mess with the standard output
-            of the test diff - e.g.:
-
-                - [{'href': '/1/', 'name': 'Task'}]
-                + /path/to/html/file [{'href': u'/1/', 'name': u'Task'}, 1]
-
-            or
-
-                - [{'href': '/1/', 'name': 'Task'}]
-                + /path/to/file [{'href': u'/1/', 'name': u'Task'}, 1]
-                ? ++++++++++++++          +               +       +++
-
-            vs.
-
-                - [{'href': '/1/', 'name': 'Task'}]
-                + [{'href': u'/1/', 'name': u'Task'}, 1]
-                ?           +               +       +++
-        """
-        # TODO: extract to own project and test above behavior
-        return self._dump_to_file() + list.__repr__(self)
-
-    def _dump_to_file(self):
-        if self.dumped_file_name is None:
-            self.dumped_file_name = self._do_dump_to_file()
-        return self.dumped_file_name
-
-    def _do_dump_to_file(self):
-        # TODO: encoding
-        try:
-            f, fname = tempfile.mkstemp()
-            fd = os.fdopen(f, 'w')
-            # TODO: use some reflection to include the filter/map lambdas in the output
-            fd.write(self.html)
-            return fname + ' '
-        except Exception as e:
-            return traceback.format_exc()
-        finally:
-            try:
-                fd.flush()
-                fd.close()
-            except UnboundLocalError:
-                pass
 
 class BaseGetter(object):
 
@@ -133,15 +74,7 @@ class TemplateRenderingBoardGetter(HtmlSoupBoardGetter):
         return render_to_string('taskboard/board.html', {'board': self.get_board()})
 
 
-
-
-class WithOwnClientAndUrlpatterns(object):
-
-    def __init__(self, testcase):
-        self.client = testcase.client
-
-
-class DjangoClientHtmlViewBoardGetter(WithOwnClientAndUrlpatterns, HtmlSoupBoardGetter):
+class DjangoClientHtmlViewBoardGetter(WithTestClient, HtmlSoupBoardGetter):
 
     class urls:
         urlpatterns = patterns('',
@@ -152,10 +85,7 @@ class DjangoClientHtmlViewBoardGetter(WithOwnClientAndUrlpatterns, HtmlSoupBoard
         return self.client.get('/').content
 
 
-class SeleniumHtmlViewBoardGetter(HtmlSoupBoardGetter):
-    needs_live_server = True
-    liveserver_url = None
-
+class SeleniumHtmlViewBoardGetter(WithWebdriver):
     class urls:
         urlpatterns = patterns('',
             (r'^$', TaskBoardView.as_view()),
@@ -197,7 +127,7 @@ class SeleniumHtmlViewBoardGetter(HtmlSoupBoardGetter):
         return map(map_fn, matches)
 
 
-class DjangoClientJsonViewBoardGetter(WithOwnClientAndUrlpatterns, BaseGetter):
+class DjangoClientJsonViewBoardGetter(WithTestClient, JsonLoader, BaseGetter):
 
     class urls:
         urlpatterns = patterns('',
@@ -208,11 +138,6 @@ class DjangoClientJsonViewBoardGetter(WithOwnClientAndUrlpatterns, BaseGetter):
             (r'^json/$', TaskBoardView.as_view(response_format='json')),
         )
 
-    def get_parsed_json(self):
-        response_body = self.client.get('/json/').content
-        with enhance_exception(lambda: response_body):
-            return json.loads(response_body, object_pairs_hook=od)
-    
     def get_owners(self):
         return self._get_from_parsed_json(
             lambda parsed: parsed.keys())
@@ -226,7 +151,7 @@ class DjangoClientJsonViewBoardGetter(WithOwnClientAndUrlpatterns, BaseGetter):
             lambda parsed: parsed[owner][status])
 
     def _get_from_parsed_json(self, map_fn):
-        parsed = self.get_parsed_json()
+        parsed = self.json_loads(self.client.get('/json/').content)
         with enhance_exception(lambda: parsed):
             return map_fn(parsed)
 
@@ -236,7 +161,7 @@ class PurePythonTaskMover(BaseGetter):
     def move_task(self, url, to_owner, to_status):
         self.get_board().move(url, to_owner, to_status)
 
-class HttpTaskMover(WithOwnClientAndUrlpatterns, BaseGetter):
+class HttpTaskMover(WithTestClient, BaseGetter):
 
     class urls:
         urlpatterns = patterns('',
@@ -260,9 +185,7 @@ class HttpTaskMover(WithOwnClientAndUrlpatterns, BaseGetter):
 from selenium.webdriver.common.action_chains import ActionChains
 
 
-class SeleniumTaskMover(object):
-    needs_live_server = True
-    liveserver_url = None
+class SeleniumTaskMover(WithWebdriver):
 
     class urls:
         urlpatterns = patterns('',
@@ -275,6 +198,3 @@ class SeleniumTaskMover(object):
         target = self.selenium.find_element_by_css_selector('td[owner="%s"][state="%s"]' % (to_owner, to_status))
         # TODO: use webelement.is_displayed!
         ActionChains(self.selenium).drag_and_drop(source, target).perform()
-
-    def __init__(self, testcase):
-        pass
