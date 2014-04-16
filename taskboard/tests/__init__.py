@@ -8,7 +8,6 @@ from taskboard.test_helpers import (
 )
 from taskboard.tests.displaying_tasks import DisplayingTasks
 from taskboard.tests.moving_tasks import MovingSingleTaskOnTwoByTwoBoard
-from taskboard.tests.enhancing_exceptions import EnhancingExceptionsTests
 
 
 class DisplayingTasksPurePythonBoard(DisplayingTasks, TestCase):

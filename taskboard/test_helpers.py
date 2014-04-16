@@ -10,7 +10,7 @@ from django.template.loader import render_to_string
 from taskboard.views import TaskBoardView, MoveTaskView
 import taskboard
 import traceback
-from taskboard.utils import enhance_exception
+from enhance_exception import enhance_exception
 
 
 class SoupSelectionList(list):

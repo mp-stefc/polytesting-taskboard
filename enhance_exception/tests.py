@@ -1,5 +1,5 @@
-from django.test import TestCase
-from taskboard.utils import enhance_exception
+from unittest import TestCase
+from enhance_exception import enhance_exception
 import traceback
 import sys
 
