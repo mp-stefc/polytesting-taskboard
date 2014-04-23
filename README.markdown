@@ -6,7 +6,19 @@
 The problem domain is a Kanban board, where tasks can be moved between
 statuses and people.
 
-## Minimum Viable Product
+## Installation instructions
+
+    $ git clone ....
+    $ cd taskboard
+    $ virtualenv taskboard-venv
+    $ source taskboard-venv/bin/activate
+    $ pip install -r requirements.txt
+
+Now you can run the tests using
+
+    $ ./run_tests.sh
+
+## Roadmap
 
 to illustrate the points needed for explaining the concept:
 
@@ -15,7 +27,7 @@ to illustrate the points needed for explaining the concept:
 * JS drag-n-drop UI
 * add phantomjs/selenium tests
 
-## Future ideas if this project turns serious
+### Future ideas if this project turns serious
 
 * enable adding tasks from the board
 * add more backends - jira, fogbugz, own model store, etc.
