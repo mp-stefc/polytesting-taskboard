@@ -8,6 +8,8 @@ statuses and people.
 
 ## Installation instructions
 
+It has been tested with python 2.7
+
     $ git clone ....
     $ cd taskboard
     $ virtualenv taskboard-venv
