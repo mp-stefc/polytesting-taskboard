@@ -18,6 +18,7 @@ class BaseGetter(object):
         return taskboard.board_loader.get_board()
 
 
+# TODO: rename board initializer?
 class PurePythonBoardBuilder(BaseGetter):
 
     def given_a_board(self, owners, states, with_tasks=None):
@@ -29,6 +30,14 @@ class PurePythonBoardBuilder(BaseGetter):
 
     def get_board(self):
         return self.board
+
+
+class PurePythonTaskAdder(BaseGetter):
+    def __init__(self, testcase):
+        pass
+
+    def add_task(self, href, owner, status, name):
+        self.get_board().add_task(href=href, owner=owner, status=status, name=name)
 
 
 class PurePythonBoardGetter(BaseGetter):
@@ -162,6 +171,11 @@ class PurePythonTaskMover(BaseGetter):
         self.get_board().move(url, to_owner, to_status)
 
 class HttpTaskMover(WithTestClient, BaseGetter):
+    # TODO: convert it into a proper form (new view) with form
+    #       to make sure we can get there from the form (second link?)
+    #       also, consider a suite of helper cls-s that can be run at 
+    #       once (and thus restricting the possible combos - the string
+    #       rendering only makes sense for displaying, but not for moving)
 
     class urls:
         urlpatterns = patterns('',

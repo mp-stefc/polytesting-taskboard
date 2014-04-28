@@ -42,9 +42,6 @@ class MovingSingleTaskOnTwoByTwoBoard(BoardApi):
 
 ###
 
-    def move_task(self, url, to_owner, to_status):
-        self.mover.move_task(url, to_owner, to_status)
-
     def assert_single_tasks_location_is(self, owner, status):
         # TODO: this is pretty inefficient in its current form,
         #   wonder whether 

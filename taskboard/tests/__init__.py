@@ -1,6 +1,6 @@
 from django.test import TestCase
 from taskboard.test_helpers import (
-    PurePythonBoardBuilder, PurePythonBoardGetter,
+    PurePythonBoardBuilder, PurePythonBoardGetter, PurePythonTaskAdder,
     TemplateRenderingBoardGetter, DjangoClientHtmlViewBoardGetter,
     SeleniumHtmlViewBoardGetter,
     DjangoClientJsonViewBoardGetter, PurePythonTaskMover, HttpTaskMover,
@@ -8,6 +8,7 @@ from taskboard.test_helpers import (
 )
 from taskboard.tests.displaying_tasks import DisplayingTasks
 from taskboard.tests.moving_tasks import MovingSingleTaskOnTwoByTwoBoard
+from taskboard.tests.adding_tasks import AddingTasks
 
 
 class DisplayingTasksPurePythonBoard(DisplayingTasks, TestCase):
@@ -61,3 +62,11 @@ class MovingTasksHtmlViaSeleniumViewPurePythonBoard(MovingSingleTaskOnTwoByTwoBo
     builder_cls = PurePythonBoardBuilder
     getter_cls = SeleniumHtmlViewBoardGetter
     mover_cls = SeleniumTaskMover
+
+
+class AddingTasksPurePythonBoard(AddingTasks, TestCase):
+    builder_cls = PurePythonBoardBuilder
+    getter_cls = PurePythonBoardGetter
+    adder_cls = PurePythonTaskAdder
+
+

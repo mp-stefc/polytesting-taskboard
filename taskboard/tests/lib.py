@@ -33,3 +33,13 @@ class BoardApi(PolyTestCase):
 
     def given_a_board(self, owners, states, with_tasks=None):
         self.builder.given_a_board(owners, states, with_tasks)
+
+    def move_task(self, url, to_owner, to_status):
+        self.mover.move_task(url, to_owner, to_status)
+
+    def add_task(self, href, owner, status, name):
+        self.adder.add_task(href=href, owner=owner, status=status, name=name)
+
+    def get_states(self):
+        return self.getter.get_states()
+
