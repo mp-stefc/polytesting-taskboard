@@ -29,7 +29,7 @@ class DisplayingTasksHtmlViewViaDjangoClientBusinessLogicOnlyBoard(DisplayingTas
 class DisplayingTasksHtmlViewViaSeleniumBusinessLogicOnlyBoard(DisplayingTasks, TestCase):
 
     urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
-    builder_cls = businesslogiconly.BoardInitializer
+    builder_cls = webdriver.BoardInitializer
     getter_cls = webdriver.BoardReader
 
 
@@ -57,7 +57,7 @@ class MovingTasksHtmlViaDjangoClientViewBusinessLogicOnlyBoard(MovingSingleTaskO
 class MovingTasksHtmlViaSeleniumViewBusinessLogicOnlyBoard(MovingSingleTaskOnTwoByTwoBoard, TestCase):
 
     urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
-    builder_cls = businesslogiconly.BoardInitializer
+    builder_cls = webdriver.BoardInitializer
     getter_cls = webdriver.BoardReader
     mover_cls = webdriver.TaskMover
 
