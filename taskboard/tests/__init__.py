@@ -1,10 +1,9 @@
 from django.test import TestCase
 from taskboard.test_helpers import (
-    TemplateRenderingBoardGetter, DjangoClientHtmlViewBoardGetter,
-    DjangoClientJsonViewBoardGetter, HttpTaskMover,
+    TemplateRenderingBoardGetter,
+    DjangoClientJsonViewBoardGetter,
 )
-from taskboard.testdrivers import businesslogiconly
-from taskboard.testdrivers import webdriver
+from taskboard.testdrivers import businesslogiconly, webdriver, djangoclient
 from taskboard.tests.displaying_tasks import DisplayingTasks
 from taskboard.tests.moving_tasks import MovingSingleTaskOnTwoByTwoBoard
 from taskboard.tests.adding_tasks import AddingTasks
@@ -23,8 +22,8 @@ class DisplayingTasksHtmlTemplateRenderingBusinessLogicOnlyBoard(DisplayingTasks
 class DisplayingTasksHtmlViewViaDjangoClientBusinessLogicOnlyBoard(DisplayingTasks, TestCase):
 
     urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
-    builder_cls = businesslogiconly.BoardInitializer
-    getter_cls = DjangoClientHtmlViewBoardGetter
+    builder_cls = djangoclient.BoardInitializer
+    getter_cls = djangoclient.BoardReader
 
 
 class DisplayingTasksHtmlViewViaSeleniumBusinessLogicOnlyBoard(DisplayingTasks, TestCase):
@@ -50,9 +49,9 @@ class MovingTasksBusinessLogicOnlyBoard(MovingSingleTaskOnTwoByTwoBoard, TestCas
 class MovingTasksHtmlViaDjangoClientViewBusinessLogicOnlyBoard(MovingSingleTaskOnTwoByTwoBoard, TestCase):
 
     urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
-    builder_cls = businesslogiconly.BoardInitializer
-    getter_cls = DjangoClientHtmlViewBoardGetter
-    mover_cls = HttpTaskMover
+    builder_cls = djangoclient.BoardInitializer
+    getter_cls = djangoclient.BoardReader
+    mover_cls = djangoclient.TaskMover
 
 
 class MovingTasksHtmlViaSeleniumViewBusinessLogicOnlyBoard(MovingSingleTaskOnTwoByTwoBoard, TestCase):
