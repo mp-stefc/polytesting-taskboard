@@ -1,11 +1,10 @@
 from django.test import TestCase
 from taskboard.test_helpers import (
     TemplateRenderingBoardGetter, DjangoClientHtmlViewBoardGetter,
-    SeleniumHtmlViewBoardGetter,
     DjangoClientJsonViewBoardGetter, HttpTaskMover,
-    SeleniumTaskMover,
 )
 from taskboard.testdrivers import businesslogiconly
+from taskboard.testdrivers import webdriver
 from taskboard.tests.displaying_tasks import DisplayingTasks
 from taskboard.tests.moving_tasks import MovingSingleTaskOnTwoByTwoBoard
 from taskboard.tests.adding_tasks import AddingTasks
@@ -32,7 +31,7 @@ class DisplayingTasksHtmlViewViaSeleniumBusinessLogicOnlyBoard(DisplayingTasks, 
 
     urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
     builder_cls = businesslogiconly.BoardInitializer
-    getter_cls = SeleniumHtmlViewBoardGetter
+    getter_cls = webdriver.BoardReader
 
 
 class DisplayingTasksJsonViewViaDjangoClientBusinessLogicOnlyBoard(DisplayingTasks, TestCase):
@@ -60,8 +59,8 @@ class MovingTasksHtmlViaSeleniumViewBusinessLogicOnlyBoard(MovingSingleTaskOnTwo
 
     urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
     builder_cls = businesslogiconly.BoardInitializer
-    getter_cls = SeleniumHtmlViewBoardGetter
-    mover_cls = SeleniumTaskMover
+    getter_cls = webdriver.BoardReader
+    mover_cls = webdriver.TaskMover
 
 
 class AddingTasksBusinessLogicOnlyBoard(AddingTasks, TestCase):
