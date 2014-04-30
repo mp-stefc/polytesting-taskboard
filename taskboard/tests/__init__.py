@@ -1,72 +1,72 @@
 from django.test import TestCase
 from taskboard.test_helpers import (
-    PurePythonBoardBuilder, PurePythonBoardGetter, PurePythonTaskAdder,
     TemplateRenderingBoardGetter, DjangoClientHtmlViewBoardGetter,
     SeleniumHtmlViewBoardGetter,
-    DjangoClientJsonViewBoardGetter, PurePythonTaskMover, HttpTaskMover,
+    DjangoClientJsonViewBoardGetter, HttpTaskMover,
     SeleniumTaskMover,
 )
+from taskboard.testdrivers import businesslogiconly
 from taskboard.tests.displaying_tasks import DisplayingTasks
 from taskboard.tests.moving_tasks import MovingSingleTaskOnTwoByTwoBoard
 from taskboard.tests.adding_tasks import AddingTasks
 
 
-class DisplayingTasksPurePythonBoard(DisplayingTasks, TestCase):
-    builder_cls = PurePythonBoardBuilder
-    getter_cls = PurePythonBoardGetter
+class DisplayingTasksBusinessLogicOnlyBoard(DisplayingTasks, TestCase):
+    builder_cls = businesslogiconly.BoardInitializer
+    getter_cls = businesslogiconly.BoardReader
 
 
-class DisplayingTasksHtmlTemplateRenderingPurePythonBoard(DisplayingTasks, TestCase):
-    builder_cls = PurePythonBoardBuilder
+class DisplayingTasksHtmlTemplateRenderingBusinessLogicOnlyBoard(DisplayingTasks, TestCase):
+    builder_cls = businesslogiconly.BoardInitializer
     getter_cls = TemplateRenderingBoardGetter
 
 
-class DisplayingTasksHtmlViewViaDjangoClientPurePythonBoard(DisplayingTasks, TestCase):
+class DisplayingTasksHtmlViewViaDjangoClientBusinessLogicOnlyBoard(DisplayingTasks, TestCase):
 
     urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
-    builder_cls = PurePythonBoardBuilder
+    builder_cls = businesslogiconly.BoardInitializer
     getter_cls = DjangoClientHtmlViewBoardGetter
 
 
-class DisplayingTasksHtmlViewViaSeleniumPurePythonBoard(DisplayingTasks, TestCase):
+class DisplayingTasksHtmlViewViaSeleniumBusinessLogicOnlyBoard(DisplayingTasks, TestCase):
 
     urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
-    builder_cls = PurePythonBoardBuilder
+    builder_cls = businesslogiconly.BoardInitializer
     getter_cls = SeleniumHtmlViewBoardGetter
 
 
-class DisplayingTasksJsonViewViaDjangoClientPurePythonBoard(DisplayingTasks, TestCase):
+class DisplayingTasksJsonViewViaDjangoClientBusinessLogicOnlyBoard(DisplayingTasks, TestCase):
 
     urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
-    builder_cls = PurePythonBoardBuilder
+    builder_cls = businesslogiconly.BoardInitializer
     getter_cls = DjangoClientJsonViewBoardGetter
 
 
-class MovingTasksPurePythonBoard(MovingSingleTaskOnTwoByTwoBoard, TestCase):
-    builder_cls = PurePythonBoardBuilder
-    getter_cls = PurePythonBoardGetter
-    mover_cls = PurePythonTaskMover
+class MovingTasksBusinessLogicOnlyBoard(MovingSingleTaskOnTwoByTwoBoard, TestCase):
+    builder_cls = businesslogiconly.BoardInitializer
+    getter_cls = businesslogiconly.BoardReader
+    mover_cls = businesslogiconly.TaskMover
 
 
-class MovingTasksHtmlViaDjangoClientViewPurePythonBoard(MovingSingleTaskOnTwoByTwoBoard, TestCase):
+class MovingTasksHtmlViaDjangoClientViewBusinessLogicOnlyBoard(MovingSingleTaskOnTwoByTwoBoard, TestCase):
 
     urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
-    builder_cls = PurePythonBoardBuilder
+    builder_cls = businesslogiconly.BoardInitializer
     getter_cls = DjangoClientHtmlViewBoardGetter
     mover_cls = HttpTaskMover
 
 
-class MovingTasksHtmlViaSeleniumViewPurePythonBoard(MovingSingleTaskOnTwoByTwoBoard, TestCase):
+class MovingTasksHtmlViaSeleniumViewBusinessLogicOnlyBoard(MovingSingleTaskOnTwoByTwoBoard, TestCase):
 
     urls = True  # TODO: hack - to ensure that root url conf will be stored by the testcase
-    builder_cls = PurePythonBoardBuilder
+    builder_cls = businesslogiconly.BoardInitializer
     getter_cls = SeleniumHtmlViewBoardGetter
     mover_cls = SeleniumTaskMover
 
 
-class AddingTasksPurePythonBoard(AddingTasks, TestCase):
-    builder_cls = PurePythonBoardBuilder
-    getter_cls = PurePythonBoardGetter
-    adder_cls = PurePythonTaskAdder
+class AddingTasksBusinessLogicOnlyBoard(AddingTasks, TestCase):
+    builder_cls = businesslogiconly.BoardInitializer
+    getter_cls = businesslogiconly.BoardReader
+    adder_cls = businesslogiconly.TaskAdder
 
 
