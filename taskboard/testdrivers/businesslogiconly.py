@@ -1,5 +1,13 @@
 import taskboard
-from taskboard.test_helpers import BaseGetter
+
+
+class BaseGetter(object):
+
+    def __init__(self, testcase):
+        pass
+
+    def get_board(self):
+        return taskboard.board_loader.get_board()
 
 
 class BoardInitializer(BaseGetter):

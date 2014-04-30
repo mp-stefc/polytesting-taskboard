@@ -1,7 +1,6 @@
 from django.conf.urls import patterns
 from django.core.urlresolvers import reverse
 from polytesting import SoupSelectionList, WithTestClient
-from taskboard.test_helpers import BaseGetter, HtmlSoupBoardGetter
 from taskboard.views import TaskBoardView, MoveTaskView
 from django.http import HttpResponse
 from taskboard.testdrivers import businesslogiconly
@@ -10,18 +9,40 @@ from taskboard.testdrivers import businesslogiconly
 BoardInitializer = businesslogiconly.BoardInitializer
 
 
-class BoardReader(WithTestClient, HtmlSoupBoardGetter):
+class BoardReader(WithTestClient):
 
     class urls:
         urlpatterns = patterns('',
             (r'^$', TaskBoardView.as_view()),
         )
 
+    def get_owners(self):
+        return SoupSelectionList(
+            self.get_html(), 
+            lambda soup: soup.find_all('td', class_='owner'),
+            lambda td: td.string
+        )
+
+    def get_states(self):
+        return SoupSelectionList(
+            self.get_html(), 
+            lambda soup: soup.find_all('th'),
+            lambda th: th.string
+        )
+
+    def get_tasks_for(self, owner, status):
+        css_selector = 'td a.%s.%s' % (owner, status)
+        return SoupSelectionList(
+            self.get_html(), 
+            lambda soup: soup.select(css_selector),
+            lambda a: dict(name=a.string, href=a['href'])
+        )
+
     def get_html(self):
         return self.client.get('/').content
 
 
-class TaskMover(WithTestClient, BaseGetter):
+class TaskMover(WithTestClient):
     # TODO: convert it into a proper form (new view) with form
     #       to make sure we can get there from the form (second link?)
     #       also, consider a suite of helper cls-s that can be run at 
