@@ -37,7 +37,10 @@ class MovingSingleTaskOnTwoByTwoBoard(BoardApi):
         #       the purpose of this project is to demonstrate polytesting
         #       I'm OK with this HACK
         self.assert_single_tasks_location_is(owner='Bob', status='Done')
+        import time
+        time.sleep(1)
         self.move_task('/task', to_owner='Alice', to_status='Open')
+        time.sleep(1)
         self.assert_single_tasks_location_is(owner='Alice', status='Open')
 
 ###
