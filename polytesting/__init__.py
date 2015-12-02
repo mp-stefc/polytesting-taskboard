@@ -10,7 +10,7 @@ from django.conf import settings
 from django.test import LiveServerTestCase
 from django.core.urlresolvers import clear_url_caches, set_urlconf
 from django.conf.urls import patterns
-from selenium.webdriver.firefox.webdriver import WebDriver
+from selenium.webdriver.phantomjs.webdriver import WebDriver
 
 
 class SoupSelectionList(list):
