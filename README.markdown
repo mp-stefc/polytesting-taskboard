@@ -13,7 +13,7 @@ Nürnberg user group. The [slides][slides] are available from my [blog][blog]
 
 It has been tested with python 2.7 and Ubuntu
 
-    $ git clone git@bitbucket.org:zsoldosp/polytesting-taskboard.git
+    $ git clone git@github.com:zsoldosp/polytesting-taskboard.git
     $ ./setup.sh
 
 To view the application's minimalist UI, run
