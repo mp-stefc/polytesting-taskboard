@@ -19,7 +19,7 @@ It has been tested with python 2.7 and Ubuntu
 To view the application's minimalist UI, run
 
     $ virtualenv venv-taskboard
-    $ source taskboard-venv/bin/activate
+    $ source venv-taskboard/bin/activate
     $ export DJANGO_SETTINGS_MODULE=settings
     $ ./manage.py runserver
 
